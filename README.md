@@ -137,7 +137,7 @@ $ isign -h
 **-a &lt;path&gt;, --apple-cert &lt;path&gt;**
 
 Path to Apple certificate in PEM format. This is already included in the library, so you will likely
-never need it. In the event that the certificates need to be changed, See the [Apple Certificate documentation](docs/applecerts.rst).
+never need it. In the event that the certificates need to be changed, See the [Apple Certificate documentation](docs/applecerts.md).
 
 **-c &lt;path&gt;, --certificate &lt;path&gt;**
 
