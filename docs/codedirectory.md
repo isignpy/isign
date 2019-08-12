@@ -11,9 +11,7 @@ hash. Together, all these special hashes are called the CodeDirectory.
 Perhaps to indicate that these are special hashes, they were given
 negative offsets in the list of hashes.
 
-For instance, if you do ``codesign -d -r- --verbose=20 some.app``
-
-::
+For instance, if you do `codesign -d -r- --verbose=20 some.app`
 
     Executable=...
     Identifier=com.somecompany.someapp
@@ -36,17 +34,13 @@ CodeDirectory hashes are sometimes called slots.
 
 When building the CodeDirectory, We need to observe these constraints:
 
--  Executables should have all 5 slots in their codedirectory
+-   Executables should have all 5 slots in their codedirectory
+-   Dylibs only need 2 slots, but sometimes have been compiled with 5
+-   Dylibs should never include the ResourceDir slot, even if they have 5
+    slots
+-   We should delay calculating hashes until we know we are going to use
+    them
+-   Nobody uses the Application-specific slot anyway
+-   At least so far, we don't need to change the Info.plist slot when
+    re-signing
 
--  Dylibs only need 2 slots, but sometimes have been compiled with 5
-
--  Dylibs should never include the ResourceDir slot, even if they have 5
-   slots
-
--  We should delay calculating hashes until we know we are going to use
-   them
-
--  Nobody uses the Application-specific slot anyway
-
--  At least so far, we don't need to change the Info.plist slot when
-   re-signing
