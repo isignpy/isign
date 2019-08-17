@@ -82,7 +82,7 @@ For passing sensitive configuration into your signer module, you should consider
 
 Your class, once initialized as on object, must implement these methods:
 
-#### `sign(self, data)`
+##### `sign(self, data)`
 
 `data` is a string, potentially very large.
 
@@ -92,10 +92,23 @@ The signature is a [CMS](https://en.wikipedia.org/wiki/Cryptographic_Message_Syn
 given data in [DER](https://wiki.openssl.org/index.php/DER) form.
 
 The signing key must be the private key of the public-private pair registered to your Apple developer 
-organization. The signing certificate must be the Apple-provided certificate for your developer organization.
-See the [documentation on credentials](credentials.md) for details.
+organization. Depending on how you're doing this, it may have already been provided to your class in the 
+`signer_key_file`. The signing certificate must be the Apple-provided certificate for your developer organization. 
+This may have been already provided in the `signer_cert_file`. See the [documentation on credentials](credentials.md) 
+for details on keys and certificates.
 
-You must also incorporate the [current public Apple certificate(s)](applecerts.md) as an additional certificate.
+You must also incorporate the [current public Apple certificate(s)](applecerts.md) as an additional certificate. This 
+should be provided to your class as `apple_cert_file`.
 
 Also see the implementation of isign's `Signer.sign` for hints. This is not a trivial thing to get right, so take your
 time and be patient.
+
+
+## Hints on secure design
+
+There is only one element of signing that absolutely must remain private: the private key.
+
+Everything else is public knowledge. Your certificate, and Apple's certificates, can be passed around in the clear.
+
+Consequently, if you need to store your keys in an HSM, you can make life easier on yourself by treating some or
+all of the certificates as information you pass in as arguments. Your certificate just needs to be paired with the right key.
