@@ -111,7 +111,7 @@ class Signer(object):
             log.warn(msg.format(openssl_version, MINIMUM_OPENSSL_VERSION))
 
     def sign(self, data):
-        """ sign data, return filehandle """
+        """ sign data, return string """
         cmd = [
             "cms",
             "-sign", "-binary", "-nosmimecap",

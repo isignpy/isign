@@ -146,6 +146,12 @@ Path to your certificate in PEM format. Defaults to `$HOME/.isign/certificate.pe
 **-d, --display**
 
 For the application path, display the information property list (Info.plist) as JSON.
+        
+**-e, --entitlements**
+
+Use alternate entitlements,         '-e', '--entitlements',
+
+
 
 **-h, --help**
 
