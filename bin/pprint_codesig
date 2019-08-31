@@ -28,8 +28,8 @@ def print_codesig(path):
     temp_dir = None
     try:
         archive = isign.archive.archive_factory(path)
-        (temp_dir, bundle) = appArchive.unarchive_to_temp()
-        _print_codesig(bundle)
+        unarchive = archive.unarchive_to_temp()
+        _print_codesig(unarchive.bundle)
     except NotSignable as e:
         msg = "Not signable: <{0}> {1}\n".format(path, e)
         log.error(msg)
@@ -40,7 +40,7 @@ def print_codesig(path):
 
 
 def _print_codesig(bundle):
-    executable = Executable(bundle.get_executable_path())
+    executable = Executable(bundle, bundle.get_executable_path(), None)
     for arch in executable.arches:
         print arch['cmds']['LC_CODE_SIGNATURE']
 
