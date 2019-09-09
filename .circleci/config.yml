@@ -23,29 +23,26 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            # TODO can one file define dependencies? It's a bit of a mishmash between setuptools and pip right now.
-            # Or we need to make our own docker image, with libimobiledevice and so on.
-            - v1-dependencies-{{ checksum "setup.py" }}{{ checksum "dev/requirements.txt" }}
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run:
           name: install dependencies
           command: |
-            python -m venv venv
-            . venv/bin/activate
-            dev/setup.sh
+            ./INSTALL.sh
+            sudo pip install pipenv
+            PIPENV_VENV_IN_PROJECT=true pipenv --two install --dev
 
       - save_cache:
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}{{ checksum "dev/requirements.txt" }}
+            - ./.venv
+          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            ./run_tests.sh
+            pipenv run ./run_tests.sh
 
       - store_artifacts:
           path: test-reports
