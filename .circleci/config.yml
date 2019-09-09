@@ -1,13 +1,17 @@
+---
 # Python CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
 jobs:
-    test_macos:
-        macos:
-            xcode: "11.0.0"
-      
+  #
+  # MacOS job
+  #
+  test_macos:
+    macos:
+      xcode: "11.0.0"
+
     working_directory: ~/repo
 
     steps:
@@ -41,11 +45,13 @@ jobs:
           path: test-reports
           destination: test-reports
 
-
+  #
+  # Linux job
+  #
   test_linux:
     docker:
       - image: circleci/python:2.7-buster
-    
+
     working_directory: ~/repo
 
     steps:
@@ -81,8 +87,8 @@ jobs:
 
 
 workflows:
-    version: 2
-    tests:
-        jobs:
-            - test_macos
-            - test_linux
+  version: 2
+  tests:
+    jobs:
+      - test_macos
+      - test_linux
