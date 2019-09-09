@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+nose = "*"
+pytest = "*"
+twine = "*"
+v = {editable = true,version = "*"}
+
+[packages]
+biplist = "==0.9"
+construct = "==2.5.2"
+memoizer = "==0.0.1"
+pyOpenSSL = ">=19"
+
+[requires]
+python_version = "2.7"

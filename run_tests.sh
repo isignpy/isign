@@ -10,12 +10,19 @@ for app in unzip zip; do
     fi
 done
 
-# run test suite
+# get env vars for library paths, etc
+source ./env.sh
 
-# find . -name '*.pyc' -delete
-# pushd tests >/dev/null
+# TODO this is a Sauce Labs standard that we may not need in the future
+./version.sh > version.json
+
+find . -name '*.pyc' -delete
+
+pushd tests >/dev/null
 version=$(python -c "import $package; print ${package}.__version__")
 echo "Testing $name v${version}"
-# nosetests
+
+nosetests
+
 popd >/dev/null
 exit 0
