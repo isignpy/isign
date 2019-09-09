@@ -4,17 +4,10 @@
 #
 version: 2
 jobs:
-  build:
-    docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:2.7-buster
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
+  test_macos:
+      macos:
+          xcode: "11.0.0"
+      
     working_directory: ~/repo
 
     steps:
@@ -47,3 +40,49 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
+
+
+  test_linux:
+    docker:
+      - image: circleci/python:2.7-buster
+    
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            ./INSTALL.sh
+            sudo pip install pipenv
+            PIPENV_VENV_IN_PROJECT=true pipenv --two install --dev
+
+      - save_cache:
+          paths:
+            - ./.venv
+          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: run tests
+          command: |
+            pipenv run ./run_tests.sh
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+
+workflows:
+    version: 2
+    tests:
+        jobs:
+            - test_macos
+            - test_linux
