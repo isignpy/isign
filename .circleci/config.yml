@@ -22,7 +22,7 @@ jobs:
           keys:
             - v1-dependencies-macos-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v1-dependencies-macos-
 
       - run:
           name: install dependencies
@@ -62,7 +62,7 @@ jobs:
           keys:
             - v1-dependencies-linux-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v1-dependencies-linux
 
       - run:
           name: install dependencies
