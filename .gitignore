@@ -32,9 +32,13 @@ parts/
 sdist/
 var/
 venv/
+.venv/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Sauce Labs version standard thing
+version.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
