@@ -20,7 +20,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            - v1-dependencies-macos-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -34,7 +34,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-macos-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -60,7 +60,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            - v1-dependencies-linux-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -74,7 +74,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-linux-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
