@@ -14,7 +14,7 @@ done
 source ./env.sh
 
 # TODO this is a Sauce Labs standard that we may not need in the future
-./version.sh > version.json
+./version.sh
 
 find . -name '*.pyc' -delete
 
