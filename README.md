@@ -1,3 +1,6 @@
+Linux build: [![CircleCI](https://circleci.com/gh/isignpy/isign/tree/master.svg?style=svg)](https://circleci.com/gh/isignpy/isign/tree/master)
+Mac build: TBD
+
 isign
 =====
 
@@ -8,6 +11,7 @@ For example, an iOS app in development would probably only run on the developer'
 
 Apple tools already exist to do this. But with `isign`, now you can do this on operating
 systems like Linux.
+
 
 Table of contents
 -----------------
