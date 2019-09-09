@@ -1,5 +1,5 @@
-Linux build: [![CircleCI](https://circleci.com/gh/isignpy/isign/tree/master.svg?style=svg)](https://circleci.com/gh/isignpy/isign/tree/master)
-Mac build: TBD
+
+[![CircleCI](https://circleci.com/gh/isignpy/isign/tree/master.svg?style=svg)](https://circleci.com/gh/isignpy/isign/tree/master)
 
 isign
 =====
