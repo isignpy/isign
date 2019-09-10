@@ -6,11 +6,27 @@ warn() {
     echo "$@" 1>&2;
 }
 
+brew_install() {
+    # brew is stupid and returns an error if the package was already installed
+    # bash is also stupid and makes it hard to capture stderr
+    local package_name=$1 
+    local retval=0
+    local tmp_error=$(mktemp)
+    if ! brew install "$package_name" 2>"$tmp_error"; then
+        if ! grep "is already installed" "$tmp_error"; then
+            retval=1
+        fi
+    fi
+    cat "$tmp_error"
+    echo "brew install $package_name result: $retval"
+    return "$retval"
+}
+
 mac_setup() {
-    brew install "python@2"
-    brew install "openssl@1.1"
-    brew install libffi
-    brew install libimobiledevice
+    brew_install "python@2"
+    brew_install "openssl@1.1"
+    brew_install libffi
+    brew_install libimobiledevice
 }
 
 linux_setup() {
