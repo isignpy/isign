@@ -90,5 +90,5 @@ workflows:
   version: 2
   tests:
     jobs:
-      - test_macos
+      # - test_macos
       - test_linux
