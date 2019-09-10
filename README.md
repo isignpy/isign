@@ -37,14 +37,14 @@ $ pip install isign
 
 ### Mac OS X
 
-On Mac OS X, there are a lot of prerequisites, so the `pip` method probably won't work.
-The easiest method is to use `git` to clone the [source code repository](https://github.com/saucelabs/isign) and
-run the install script:
+The easiest method is to use `git` to clone the [source code repository](https://github.com/isignpy/isign) and
+run the install script, then install dependencies with `pipenv`.
 
 ``` {.sourceCode .}
-$ git clone https://github.com/saucelabs/isign.git
+$ git clone https://github.com/isignpy/isign.git
 $ cd isign
-$ sudo ./INSTALL.sh
+$ ./INSTALL.sh
+$ pipenv --two install
 ```
 
 How to get started
@@ -55,7 +55,7 @@ and Mac OS X. However, you will need a Mac to export your Apple developer
 credentials.
 
 If you're like most iOS developers, credentials are confusing -- if so check out
-the [documentation on credentials](https://github.com/saucelabs/isign/blob/master/docs/credentials.rst) on Github.
+the [documentation on credentials](https://github.com/isignpy/isign/blob/master/docs/credentials.rst) on Github.
 
 You should have a key and certificate in
 [Keychain Access](https://en.wikipedia.org/wiki/Keychain_(software)),
@@ -207,21 +207,20 @@ Contributing
 Sauce Labs open source projects have a [Code of Conduct](CONDUCT.md). In short, we try to respect each other,
 listen, and be helpful.
 
-Development happens on [our Github repository](https://github.com/saucelabs/isign). File an issue, or fork the code!
+Development happens on [our Github repository](https://github.com/isignpy/isign). File an issue, or fork the code!
 
-You'll probably want to create some kind of python virtualenv, so you don't have to touch your system python or its
-libraries. [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/) is a good tool for this.
+You'll need `[pipenv](https://docs.pipenv.org/en/latest/)`.
 
 Then, just do the following:
 
 ``` {.sourceCode .}
-$ git clone https://github.com/saucelabs/isign.git
+$ git clone https://github.com/isignpy/isign.git
 $ cd isign
-$ dev/setup.sh 
-$ ./run_tests.sh
+$ ./INSTALL.sh 
+$ pipenv --two install --dev
 ```
 
-If the tests don't pass please [file an issue](https://github.com/saucelabs/isign/issues). Please keep the tests up to date as you develop.
+If the tests don't pass please [file an issue](https://github.com/isignpy/isign/issues). Please keep the tests up to date as you develop.
 
 Note: some tests require Apple's
 [codesign](https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man1/codesign.1.html)
