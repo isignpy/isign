@@ -19,7 +19,7 @@ class CodeDirectorySlot(object):
         self.codesig = codesig
 
     def get_hash(self):
-        return hashlib.sha1(self.get_contents()).digest()
+        return hashlib.sha256(self.get_contents()).digest()
 
 
 class EntitlementsSlot(CodeDirectorySlot):
@@ -33,7 +33,7 @@ class ApplicationSlot(CodeDirectorySlot):
     offset = -4
 
     def get_hash(self):
-        return '\x00' * 20
+        return '\x00' * (20 if hash_algorithm == 'sha1' else 32)
 
 
 class ResourceDirSlot(CodeDirectorySlot):
@@ -70,7 +70,7 @@ class Codesig(object):
     def __init__(self, signable, data):
         self.signable = signable
         self.construct = macho_cs.Blob.parse(data)
-        self.is_sha256 = len(self.construct.data.BlobIndex) >= 6
+        self.is_sha256 = len(self.construct.data.BlobIndex) >= 6  # FIXME: nonsense
 
     def is_sha256_signature(self):
         return self.is_sha256
@@ -221,7 +221,8 @@ class Codesig(object):
 
         cd.bytes = macho_cs.CodeDirectory.build(cd.data)
         # open("cdrip", "wb").write(cd_data)
-        # log.debug("CDHash:" + hashlib.sha1(cd_data).hexdigest())
+        log.debug("CDHash sha1:" + hashlib.sha1(cd.bytes).hexdigest())
+        log.debug("CDHash sha256:" + hashlib.sha256(cd.bytes).hexdigest())
 
     def set_signature(self, signer):
         # TODO how do we even know this blobwrapper contains the signature?
@@ -256,16 +257,17 @@ class Codesig(object):
         self.construct.bytes = superblob
 
     def resign(self, bundle, signer):
-        """ Do the actual signing. Create the structre and then update all the
+        """ Do the actual signing. Create the structure and then update all the
             byte offsets """
         if self.is_sha256_signature():
+            # FIXME: broken hack to remove sha256 sig
             # Might be an app signed from Xcode 7.3+ with sha256 stuff
             codedirs = []
             for i, index in enumerate(self.construct.data.BlobIndex):
                 if index.blob.magic == 'CSMAGIC_CODEDIRECTORY':
                     codedirs.append(i)
 
-            if len(codedirs) == 2:
+            if len(codedirs) == 2 and False:
                 # Remove the sha256 code directory
                 i = codedirs.pop()
                 if (len(self.construct.data.BlobIndex) <= i + 1 or
