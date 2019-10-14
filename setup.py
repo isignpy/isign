@@ -27,8 +27,8 @@ setup(
     description='Re-signing iOS apps without Apple tools',
     url='https://github.com/saucelabs/{}'.format(package_name),
     download_url='https://github.com/saucelabs/{}/tarball/v{}'.format(package_name, version),
-    author='Sauce Labs',
-    author_email='dev@saucelabs.com',
+    author='Neil Kandalgaonkar',
+    author_email='neilk+isignpysetup@neilk.net',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -42,7 +42,7 @@ setup(
         'biplist==0.9',
         'construct==2.5.2',
         'memoizer==0.0.1',
-        'pyOpenSSL==0.15.1'
+        'pyOpenSSL>=19'
     ],
     package_data={
         package: ['apple_credentials/applecerts.pem',
