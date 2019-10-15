@@ -201,8 +201,6 @@ class App(Bundle):
 
     def __init__(self, path):
         super(App, self).__init__(path)
-        self.entitlements_path = join(self.path,
-                                      'Entitlements.plist')
         self.provision_path = join(self.path,
                                    'embedded.mobileprovision')
 
@@ -211,6 +209,7 @@ class App(Bundle):
 
     @staticmethod
     def extract_entitlements(provision_path):
+        log.debug("EXTRACTING ENTITLEMENTS")
         """ Given a path to a provisioning profile, return the entitlements
             encoded therein """
         cmd = [
@@ -234,8 +233,11 @@ class App(Bundle):
     def write_entitlements(self, entitlements):
         """ Write entitlements to self.entitlements_path. This actually doesn't matter
             to the app, it's just used later on by other parts of the signing process. """
-        biplist.writePlist(entitlements, self.entitlements_path, binary=False)
-        log.debug("wrote Entitlements to {0}".format(self.entitlements_path))
+        entitlements_path = join(self.path,
+                                 'Entitlements.plist')
+        biplist.writePlist(entitlements, entitlements_path, binary=False)
+        log.debug("wrote Entitlements to {0}".format(entitlements_path))
+        self.entitlements_path = entitlements_path
 
     def resign(self, deep, signer, provisioning_profile, alternate_entitlements_path=None):
         """ signs app in place """
@@ -250,9 +252,7 @@ class App(Bundle):
             if alternate_entitlements_path is None:
                 # copy the provisioning profile in
                 self.provision(provisioning_profile)
-
                 entitlements = self.extract_entitlements(provisioning_profile)
-
             else:
                 log.info("signing with alternative entitlements: {}".format(alternate_entitlements_path))
                 entitlements = biplist.readPlist(alternate_entitlements_path)
