@@ -158,7 +158,7 @@ def parse_args():
     parser.add_argument(
         '--signerArg',
         required=False,
-        dest='signer_module_argument_pairs'
+        dest='signer_module_argument_pairs',
         action='append',
         metavar='<foo=bar>',
         help='Keyword=value arguments for signer module (can be used multiple times)',
