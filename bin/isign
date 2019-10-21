@@ -146,6 +146,23 @@ def parse_args():
         default=False,
         help='Sign in place, destructively replacing the original input.  This matches Apple codesign behavior.',
     )
+    parser.add_argument(
+        '--signer',
+        required=False,
+        dest='signer_module',
+        action='store',
+        metavar='<SignerModuleName>',
+        type=absolute_path_argument,
+        help='Name of alternate signer module. Must be discoverable via PYTHONPATH',
+    )
+    parser.add_argument(
+        '--signerArg',
+        required=False,
+        dest='signer_module_argument_pairs',
+        action='append',
+        metavar='<foo=bar>',
+        help='Keyword=value arguments for signer module (can be used multiple times)',
+    )
 
     return parser.parse_args()
 
@@ -200,6 +217,14 @@ if __name__ == '__main__':
                 raise Exception('output-path and inplace should not be both specified')
             kwargs['output_path'] = app_path
 
+        signer_module_arguments = {}
+        if args.signer_module_argument_pairs:
+            for pair in args.signer_module_argument_pairs:
+                if '=' not in pair:
+                    raise Exception('Cannot parse "{}". Signer module argument must be like foo=bar'.format(pair))
+                k, v = pair.split('=')
+                signer_module_arguments[k] = v
+
         if args.fingerprint:
             incompatible_args = ['certificate', 'key']
             args_dict = vars(args)
@@ -211,8 +236,6 @@ if __name__ == '__main__':
 
             if args.fingerprint != '-':
                 raise Exception("Currently only - (ad hoc) is supported as a fingerprint value.")
-
-            kwargs['key'] = None
             resign_args = ['deep',
                            'output_path']
             kwargs.update(filter_args(args, resign_args))

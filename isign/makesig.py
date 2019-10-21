@@ -117,7 +117,7 @@ def make_basic_codesig(entitlements_file, drs, code_limit, hashes, signer, ident
     empty_hash = "\x00" * 20
 
     if not signer.is_adhoc():
-        teamID = signer._get_team_id() + '\x00'
+        teamID = signer.get_team_id() + '\x00'
         cd = construct.Container(cd_start=None,
                                  version=0x20200,
                                  flags=0,

@@ -14,7 +14,6 @@ from os.path import abspath, dirname, exists, isdir, isfile, join, normpath
 import tempfile
 import re
 from subprocess import call
-from signer import AdhocSigner, Signer
 import shutil
 import zipfile
 
@@ -361,9 +360,7 @@ def view(input_path):
 
 def resign(input_path,
            deep,
-           certificate,
-           key,
-           apple_cert,
+           signer,
            provisioning_profile,
            output_path,
            info_props=None,
@@ -375,18 +372,6 @@ def resign(input_path,
     if not exists(input_path):
         raise IOError("{0} not found".format(input_path))
 
-
-    if key == None:
-        log.debug('Signing ad-hoc')
-        signer = AdhocSigner()
-    else:
-        log.debug('Signing with apple_cert: {}'.format(apple_cert))
-        log.debug('Signing with key: {}'.format(key))
-        log.debug('Signing with certificate: {}'.format(certificate))
-        log.debug('Signing with provisioning_profile: {}'.format(provisioning_profile))
-        signer = Signer(signer_cert_file=certificate,
-                        signer_key_file=key,
-                        apple_cert_file=apple_cert)
     ua = None
     bundle_info = None
     try:
@@ -408,3 +393,4 @@ def resign(input_path,
         if ua is not None:
             ua.remove()
     return bundle_info
+
