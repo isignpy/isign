@@ -27,7 +27,7 @@ class FooSigner(object):
     def is_adhoc(self):
         return False
 
-    def _get_team_id(self):
+    def get_team_id(self):
         return 'FOOCMPNY'
 
     def get_common_name(self):
