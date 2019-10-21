@@ -21,8 +21,14 @@ class FooSigner(object):
     def sign(self, data):
         log.info("I am FooSigning!")
         log.info(self.signer_args)
-        self.signer_args.callback()
+        self.signer_args['callback']("FooSigner was here")
         return ''
 
     def is_adhoc(self):
         return False
+
+    def _get_team_id(self):
+        return 'FOOCMPNY'
+
+    def get_common_name(self):
+        return 'FooCompany'

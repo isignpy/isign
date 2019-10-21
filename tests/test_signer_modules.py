@@ -9,23 +9,29 @@ log = logging.getLogger(__name__)
 
 class TestSignerModules(IsignBaseTest):
 
-    is_called = False
-
-    def callback(self):
-        TestSignerModules.is_called = True
-
     def test_signer_module(self):
 
         lib_dir_path = join(dirname(realpath(__file__)), 'TestPythonLibDir')
-        print lib_dir_path
+        log.debug("library directory: {}".format(lib_dir_path))
+
+        calls = []   # Py2 won't allow to refer to outer scope by assignment, e.g. isCalled = True
+                     # To let the outer scope know a thing happened, must alter a mutable object - like an array!
+        def callback(x):
+            log.debug("The callback was fired")
+            calls.append(x)
+
+        output_path = self.get_temp_file()
 
         try:
             sys.path.append(lib_dir_path)
             print sys.path
             isign.resign(
                 IsignBaseTest.TEST_IPA,
+                provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
                 signer_module='FooSigner.FooSigner',
-                signer_module_arguments={'callback': TestSignerModules.callback})
-            assert TestSignerModules.is_called
+                signer_module_arguments={'callback': callback},
+                output_path = output_path
+            )
+            assert len(calls) > 0
         finally:
             sys.path.remove(lib_dir_path)
