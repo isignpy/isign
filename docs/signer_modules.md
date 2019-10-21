@@ -103,6 +103,24 @@ should be provided to your class as `apple_cert_file`.
 Also see the implementation of isign's `Signer.sign` for hints. This is not a trivial thing to get right, so take your
 time and be patient.
 
+##### `get_team_id()`
+
+Return a string of the Team ID, sometimes called the Organizational Unit or App ID Prefix in 
+Apple parlance. Usually an eight-character string, all uppercase letters. This is derivable 
+from your certificate; it's in the `Subject: OU=` line. Otherwise check your account at 
+developer.apple.com. It can usually be found in the "Identifiers" section.
+
+
+##### `is_adhoc()`
+
+Unless you know what you are doing here, always return False.
+
+
+##### `get_common_name()`
+
+Return a string corresponding to your common name. This is derivable from your certificate, in the
+`CN=` Subject. Usually 
+ 
 
 ## Hints on secure design
 
@@ -111,4 +129,5 @@ There is only one element of signing that absolutely must remain private: the pr
 Everything else is public knowledge. Your certificate, and Apple's certificates, can be passed around in the clear.
 
 Consequently, if you need to store your keys in an HSM, you can make life easier on yourself by treating some or
-all of the certificates as information you pass in as arguments. Your certificate just needs to be paired with the right key.
+all of the certificates as information you pass in as arguments. Your certificate just needs to be paired with 
+the right key.
