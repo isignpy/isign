@@ -17,6 +17,8 @@ from subprocess import call
 from signer import AdhocSigner, Signer
 import shutil
 import zipfile
+from signable import XattrSignable
+import xattr
 
 
 REMOVE_WATCHKIT = True
@@ -408,3 +410,15 @@ def resign(input_path,
         if ua is not None:
             ua.remove()
     return bundle_info
+
+
+"""
+    # to sign an xattr file:
+
+    import shutil
+    shutil.copy(input_path, output_path)
+    xattrs = xattr.xattr(input_path)
+    xattr.xattr(output_path).update(xattrs)
+    signable = XattrSignable(ua.bundle, output_path)
+    signable.sign(signer)
+"""
