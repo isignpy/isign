@@ -230,11 +230,11 @@ class Codesig(object):
         # it's the only blobwrapper at that level...
         # log.debug("sig:")
         sigwrapper = self.get_blob('CSMAGIC_BLOBWRAPPER')
-        # oldsig = sigwrapper.bytes.value
+        oldsig = sigwrapper.bytes.value
         # signer._log_parsed_asn1(sigwrapper.data.data.value)
         # open("sigrip.der", "wb").write(sigwrapper.data.data.value)
         cd_data = self.get_blob_data('CSMAGIC_CODEDIRECTORY')
-        sig = signer.sign(cd_data)
+        sig = signer.sign(cd_data, oldsig)
         # log.debug("sig len: {0}".format(len(sig)))
         # log.debug("old sig len: {0}".format(len(oldsig)))
         # open("my_sigrip.der", "wb").write(sig)
