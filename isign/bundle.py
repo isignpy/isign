@@ -245,7 +245,7 @@ class App(Bundle):
         # TODO all this mucking about with entitlements feels wrong. The entitlements_path is
         # not actually functional, it's just a way of passing it to later stages of signing.
         # Maybe we should determine entitlements data in isign/archive.py or even isign/isign.py,
-        # and then embed it into Signer?
+        # and then embed it into CmsSigner?
 
         # In the typical case, we add entitlements from the pprof into the app's signature
         if not signer.is_adhoc():

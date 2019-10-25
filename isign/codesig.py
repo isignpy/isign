@@ -294,7 +294,7 @@ class Codesig(object):
         # 1 - We're doing a hasattr to detect whether it's a top-level app. isinstance(App, bundle) ?
         # 2 - unlike the seal_path and info_path, the entitlements_path is not functional. Apps are verified
         #     based on the entitlements encoded into the code signature and slots and MAYBE the pprof.
-        # Possible refactor - make entitlements data part of Signer rather than Bundle?
+        # Possible refactor - make entitlements data part of CmsSigner rather than Bundle?
         if hasattr(bundle, 'entitlements_path') and bundle.entitlements_path is not None:
             self.set_entitlements(bundle.entitlements_path)
         self.set_requirements(signer)
