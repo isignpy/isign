@@ -77,7 +77,7 @@ def openssl_version_to_tuple(s):
     return ()
 
 
-class Signer(object):
+class CmsSigner(object):
     """ collaborator, holds the keys, identifiers for signer,
         and knows how to sign data """
     def __init__(self,
@@ -176,7 +176,7 @@ class Signer(object):
     def is_adhoc(self):
         return False
 
-class AdhocSigner(Signer):
+class AdhocCmsSigner(CmsSigner):
     def __init__(self):
         pass
 

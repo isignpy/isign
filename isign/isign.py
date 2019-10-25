@@ -4,7 +4,7 @@ import exceptions
 import importlib
 import os
 from os.path import dirname, exists, expanduser, join, realpath
-from signer import AdhocSigner, Signer
+from signer import AdhocCmsSigner, CmsSigner
 
 
 # this comes with the repo
@@ -62,7 +62,7 @@ def import_class(name):
 
 
 def get_signer(apple_cert, certificate, key, signer_module, signer_module_arguments):
-    """ From a set of arguments to resign(), make an appropriate Signer """
+    """ From a set of arguments to resign(), make an appropriate CmsSigner """
     if signer_module:
         # This could raise an ImportException but we'll let the exception bubble
         signerClass = import_class(signer_module)
@@ -72,11 +72,11 @@ def get_signer(apple_cert, certificate, key, signer_module, signer_module_argume
                              signer_args=signer_module_arguments)
     else:
         if key:
-            signer = Signer(signer_cert_file=certificate,
-                            signer_key_file=key,
-                            apple_cert_file=apple_cert)
+            signer = CmsSigner(signer_cert_file=certificate,
+                               signer_key_file=key,
+                               apple_cert_file=apple_cert)
         else:
-            signer = AdHocSigner()
+            signer = AdHocCmsSigner()
     return signer
 
 
@@ -99,7 +99,7 @@ def resign(input_path,
            signer_module_arguments=None,
            info_props=None,
            alternate_entitlements_path=None):
-    """ Essentially a wrapper around archive.resign(). We initialize the Signer and set default arguments """
+    """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner and set default arguments """
     signer = get_signer(apple_cert, certificate, key, signer_module, signer_module_arguments)
 
     try:
