@@ -90,9 +90,9 @@ class Signer(object):
             apple_cert_file = apple certs in .pem form
             team_id = your Apple Organizational Unit code """
 
-        log.debug('Signing with apple_cert: {}'.format(apple_cert))
-        log.debug('Signing with key: {}'.format(key))
-        log.debug('Signing with certificate: {}'.format(certificate))
+        log.debug('Signing with apple_cert: {}'.format(apple_cert_file))
+        log.debug('Signing with key: {}'.format(signer_key_file))
+        log.debug('Signing with certificate: {}'.format(signer_cert_file))
 
         for filename in [signer_key_file, signer_cert_file, apple_cert_file]:
             if not os.path.exists(filename):
@@ -102,11 +102,13 @@ class Signer(object):
         self.signer_key_file = signer_key_file
         self.signer_cert_file = signer_cert_file
         self.apple_cert_file = apple_cert_file
+
+        self.team_id = team_id
+        team_id = self.get_team_id()
         if team_id is None:
-            team_id = self.get_team_id()
-            if team_id is None:
-                raise ImproperCredentials("Cert file does not contain Subject line"
-                                          "with Apple Organizational Unit (OU)")
+            raise ImproperCredentials("Cert file does not contain Subject line"
+                                      "with Apple Organizational Unit (OU)")
+
         self.check_openssl_version()
 
     def check_openssl_version(self):
