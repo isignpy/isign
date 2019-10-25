@@ -16,6 +16,10 @@ import os
 import os.path
 import subprocess
 import re
+import asn1crypto.cms
+import binascii
+import hashlib
+from datetime import datetime
 
 OPENSSL = os.getenv('OPENSSL', spawn.find_executable('openssl', os.getenv('PATH', '')))
 # modern OpenSSL versions look like '0.9.8zd'. Use a regex to parse
@@ -77,6 +81,21 @@ def openssl_version_to_tuple(s):
     return ()
 
 
+class Pkcs1Signer(object):
+    """ low-level PKCS#1 signer, which can be used by a CmsSigner to do
+    the underlying signing operation """
+
+    def __init__(self, keyfile):
+        self.keyfile = keyfile
+        pass
+
+    def sign(self, data, password=""):
+        key = open(self.keyfile, "r").read()
+        pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key, password)
+
+        return crypto.sign(pkey, data, "sha256")
+
+
 class CmsSigner(object):
     """ collaborator, holds the keys, identifiers for signer,
         and knows how to sign data """
@@ -117,8 +136,12 @@ class CmsSigner(object):
             msg = "Signing may not work: OpenSSL version is {0}, need {1} !"
             log.warn(msg.format(openssl_version, MINIMUM_OPENSSL_VERSION))
 
-    def sign(self, data):
-        """ sign data, return string """
+    def sign_with_openssl_cms(self, data):
+        """ sign data, return string; this is the old way to do it, kept
+            around because it's currently the only way to produce a
+            signature from scratch, rather than by modifying and
+            existing one. """
+
         cmd = [
             "cms",
             "-sign", "-binary", "-nosmimecap",
@@ -138,6 +161,31 @@ class CmsSigner(object):
             raise OpenSslFailure(too_small_msg.format(' '.join(cmd),
                                                       len(signature)))
         return signature
+
+    def sign(self, data, oldsig):
+        """ sign data, return string """
+
+        parsed_sig = asn1crypto.cms.ContentInfo.load(oldsig)
+
+        for signer_info in parsed_sig['content']['signer_infos']:
+            # Update signingTime
+            signer_info['signed_attrs'][1][1][0] = asn1crypto.cms.Time("utc_time", datetime.utcnow())
+            # Update messageDigest
+            signer_info['signed_attrs'][2][1][0] = hashlib.sha256(data).digest()
+
+            # This line is necessary to make the next one work! Pretty gross.
+            signer_info['signed_attrs'].native
+            # Truncate signed_attrs to remove new custom Apple fields, until we can figure out how to update them.
+            signer_info['signed_attrs'] = signer_info['signed_attrs'][:3]
+
+            to_sign = signer_info['signed_attrs'].dump()
+            to_sign = '1' + to_sign[1:]  # change type from IMPLICIT [0] to EXPLICIT SET OF, per RFC 5652.
+
+            pkcs1sig = Pkcs1Signer(self.signer_key_file).sign(to_sign)
+
+            signer_info['signature'] = pkcs1sig
+
+        return parsed_sig.dump()
 
     def get_common_name(self):
         """ read in our cert, and get our Common Name """
