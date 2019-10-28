@@ -11,17 +11,17 @@ class FooSigner(object):
                  signer_cert_file=None,
                  apple_cert_file=None,
                  team_id=None,
-                 signer_args=None):
+                 callback=None):
         self.key = signer_key_file
-        self.certificate = signer_cert_file,
-        self.apple_certificate = apple_cert_file,
-        self.team_id = team_id,
-        self.signer_args = signer_args
+        self.certificate = signer_cert_file
+        self.apple_certificate = apple_cert_file
+        self.team_id = team_id
+        self.callback = callback
 
     def sign(self, data):
-        log.info("I am FooSigning!")
-        log.info(self.signer_args)
-        self.signer_args['callback']("FooSigner was here")
+        log.info("I am FooSigning, with this callback...")
+        log.info(self.callback)
+        self.callback("FooSigner was here")
         return ''
 
     def is_adhoc(self):

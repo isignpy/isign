@@ -2,6 +2,7 @@
 
 import argparse
 from isign import isign
+import importlib
 from os.path import abspath, expanduser
 import logging
 
@@ -149,16 +150,16 @@ def parse_args():
     parser.add_argument(
         '--signer',
         required=False,
-        dest='signer_module',
+        dest='signer_class_name',
         action='store',
-        metavar='<SignerModuleName>',
+        metavar='<SignerModuleName.SignerClassName>',
         type=absolute_path_argument,
         help='Name of alternate signer module. Must be discoverable via PYTHONPATH',
     )
     parser.add_argument(
         '--signerArg',
         required=False,
-        dest='signer_module_argument_pairs',
+        dest='signer_argument_pairs',
         action='append',
         metavar='<foo=bar>',
         help='Keyword=value arguments for signer module (can be used multiple times)',
@@ -176,6 +177,14 @@ def filter_args(args, interested):
         if k in interested and v is not None:
             kwargs[k] = v
     return kwargs
+
+
+def import_class(name):
+    components = name.split('.')
+    module_name = '.'.join(components[0:-1])
+    class_name = components[-1]
+    mod = __import__(module_name, fromlist=[class_name])
+    return getattr(mod, class_name)
 
 
 if __name__ == '__main__':
@@ -217,13 +226,17 @@ if __name__ == '__main__':
                 raise Exception('output-path and inplace should not be both specified')
             kwargs['output_path'] = app_path
 
-        signer_module_arguments = {}
-        if args.signer_module_argument_pairs:
-            for pair in args.signer_module_argument_pairs:
-                if '=' not in pair:
-                    raise Exception('Cannot parse "{}". Signer module argument must be like foo=bar'.format(pair))
-                k, v = pair.split('=')
-                signer_module_arguments[k] = v
+        if args.signer_class_name:
+            # This could raise an ImportException but we'll let the exception bubble
+            args.signer_class = import_class(args.signer_class)
+
+            signer_arguments = {}
+            if args.signer_argument_pairs:
+                for pair in args.signer_argument_pairs:
+                    if '=' not in pair:
+                        raise Exception('Cannot parse "{}". Signer module argument must be like foo=bar'.format(pair))
+                    k, v = pair.split('=')
+                    args.signer_arguments[k] = v
 
         if args.fingerprint:
             incompatible_args = ['certificate', 'key']
@@ -237,7 +250,9 @@ if __name__ == '__main__':
             if args.fingerprint != '-':
                 raise Exception("Currently only - (ad hoc) is supported as a fingerprint value.")
             resign_args = ['deep',
-                           'output_path']
+                           'output_path',
+                           'signer_class',
+                           'signer_arguments']
             kwargs.update(filter_args(args, resign_args))
             isign.resign(app_path, **kwargs)
 
@@ -254,7 +269,9 @@ if __name__ == '__main__':
             # looks good, now massage args into method arguments
             resign_args = ['apple_cert',
                            'deep',
-                           'output_path']
+                           'output_path',
+                           'signer_class',
+                           'signer_arguments']
             kwargs.update(filter_args(args, resign_args))
             isign.resign_with_creds_dir(app_path,
                                         args.credentials_dir,
@@ -270,6 +287,8 @@ if __name__ == '__main__':
                            'apple_cert',
                            'provisioning_profile',
                            'output_path',
-                           'alternate_entitlements_path']
+                           'alternate_entitlements_path',
+                           'signer_class',
+                           'signer_arguments']
             kwargs.update(filter_args(args, resign_args))
             isign.resign(app_path, **kwargs)

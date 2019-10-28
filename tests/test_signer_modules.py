@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 class TestSignerModules(IsignBaseTest):
 
-    def test_signer_module(self):
+    def test_signer_class(self):
 
         lib_dir_path = join(dirname(realpath(__file__)), 'TestPythonLibDir')
         log.debug("library directory: {}".format(lib_dir_path))
@@ -25,12 +25,15 @@ class TestSignerModules(IsignBaseTest):
         try:
             sys.path.append(lib_dir_path)
             print sys.path
+
+            from FooSigner import FooSigner
+
             isign.resign(
                 IsignBaseTest.TEST_IPA,
                 provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
-                signer_module='FooSigner.FooSigner',
-                signer_module_arguments={'callback': callback},
-                output_path = output_path
+                output_path=output_path,
+                signer_class=FooSigner,
+                signer_arguments={'callback': callback}
             )
             assert len(calls) > 0
         finally:

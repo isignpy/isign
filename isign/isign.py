@@ -1,7 +1,6 @@
 import archive
 # import makesig
 import exceptions
-import importlib
 import os
 from os.path import dirname, exists, expanduser, join, realpath
 from signer import AdhocSigner, Signer
@@ -53,33 +52,6 @@ else:
     )
 
 
-def import_class(name):
-    components = name.split('.')
-    module_name = '.'.join(components[0:-1])
-    class_name = components[-1]
-    mod = __import__(module_name, fromlist=[class_name])
-    return getattr(mod, class_name)
-
-
-def get_signer(apple_cert, certificate, key, signer_module, signer_module_arguments):
-    """ From a set of arguments to resign(), make an appropriate Signer """
-    if signer_module:
-        # This could raise an ImportException but we'll let the exception bubble
-        signerClass = import_class(signer_module)
-        signer = signerClass(apple_cert_file=apple_cert,
-                             signer_cert_file=certificate,
-                             signer_key_file=key,
-                             signer_args=signer_module_arguments)
-    else:
-        if key:
-            signer = Signer(signer_cert_file=certificate,
-                            signer_key_file=key,
-                            apple_cert_file=apple_cert)
-        else:
-            signer = AdHocSigner()
-    return signer
-
-
 def resign_with_creds_dir(input_path,
                           credentials_directory,
                           **kwargs):
@@ -95,12 +67,19 @@ def resign(input_path,
            key=DEFAULT_CREDENTIAL_PATHS['key'],
            provisioning_profile=DEFAULT_CREDENTIAL_PATHS['provisioning_profile'],
            output_path=join(os.getcwd(), "out"),
-           signer_module=None,
-           signer_module_arguments=None,
+           signer_class=None,
+           signer_arguments=None,
            info_props=None,
            alternate_entitlements_path=None):
     """ Essentially a wrapper around archive.resign(). We initialize the Signer and set default arguments """
-    signer = get_signer(apple_cert, certificate, key, signer_module, signer_module_arguments)
+
+    if not signer_class:
+        signer_class = Signer
+
+    signer = signer_class(apple_cert_file=apple_cert,
+                          signer_cert_file=certificate,
+                          signer_key_file=key,
+                          **signer_arguments)
 
     try:
         return archive.resign(input_path,
