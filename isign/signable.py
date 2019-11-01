@@ -118,7 +118,7 @@ class Signable(object):
         return arch
 
     def _sign_arch(self, arch, app, signer):
-    # Returns slice-relative offset, code signature blob
+        # Returns slice-relative offset, code signature blob
         arch['codesig'].resign(app, signer)
 
         new_codesig_data = arch['codesig'].build_data()

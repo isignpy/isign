@@ -1,7 +1,7 @@
 from os.path import isdir
 import isign
 from archive import archive_factory
-from signer import Signer
+from signer import CmsSigner
 import logging
 import multiprocessing
 
@@ -21,9 +21,9 @@ def resign(args):
         log.debug('resigning with %s %s -> %s', ua.path, cred_dir, resigned_path)
         # get the credential files, create the 'signer'
         credential_paths = isign.get_credential_paths(cred_dir)
-        signer = Signer(signer_cert_file=credential_paths['certificate'],
-                        signer_key_file=credential_paths['key'],
-                        apple_cert_file=isign.DEFAULT_APPLE_CERT_PATH)
+        signer = CmsSigner(signer_cert_file=credential_paths['certificate'],
+                           signer_key_file=credential_paths['key'],
+                           apple_cert_file=isign.DEFAULT_APPLE_CERT_PATH)
 
         # sign it (in place)
         ua.bundle.resign(signer, credential_paths['provisioning_profile'])

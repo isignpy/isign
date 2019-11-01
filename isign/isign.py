@@ -3,7 +3,7 @@ import archive
 import exceptions
 import os
 from os.path import dirname, exists, expanduser, join, realpath
-from signer import AdhocSigner, Signer
+from signer import AdhocCmsSigner, CmsSigner
 
 
 # this comes with the repo
@@ -71,10 +71,10 @@ def resign(input_path,
            signer_arguments=None,
            info_props=None,
            alternate_entitlements_path=None):
-    """ Essentially a wrapper around archive.resign(). We initialize the Signer and set default arguments """
+    """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner and set default arguments """
 
     if not signer_class:
-        signer_class = Signer
+        signer_class = CmsSigner
 
     signer = signer_class(apple_cert_file=apple_cert,
                           signer_cert_file=certificate,
