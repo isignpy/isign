@@ -7,6 +7,7 @@ import sys
 
 log = logging.getLogger(__name__)
 
+
 class TestSignerModules(IsignBaseTest):
 
     def test_signer_class(self):
