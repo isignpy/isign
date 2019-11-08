@@ -31,6 +31,8 @@ class TestSignerModules(IsignBaseTest):
 
             isign.resign(
                 IsignBaseTest.TEST_IPA,
+
+		certificate=IsignBaseTest.CERTIFICATE,
                 provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
                 output_path=output_path,
                 signer_class=FooSigner,

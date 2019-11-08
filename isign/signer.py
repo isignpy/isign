@@ -100,29 +100,38 @@ class CmsSigner(object):
     """ collaborator, holds the keys, identifiers for signer,
         and knows how to sign data """
     def __init__(self,
+		 signer,
                  signer_key_file=None,
                  signer_cert_file=None,
                  apple_cert_file=None,
                  team_id=None):
-        """ signer_key_file = your org's key .pem
+	""" signer: an initialized Signer module
+	    signer_key_file = your org's key .pem  <--- TODO, eliminate
             signer_cert_file = your org's cert .pem
             apple_cert_file = apple certs in .pem form
             team_id = your Apple Organizational Unit code """
 
+	log.debug('Signing with signer: {}'.format(signer.__class__.__name__))
         log.debug('Signing with apple_cert: {}'.format(apple_cert_file))
         log.debug('Signing with key: {}'.format(signer_key_file))
         log.debug('Signing with certificate: {}'.format(signer_cert_file))
 
-        for filename in [signer_key_file, signer_cert_file, apple_cert_file]:
+	# This should have been initialized by our caller
+	self.signer = signer
+
+	# This is optional and only used when signing from scratch (but should not be) TODO eliminate
+	self.signer_key_file = signer_key_file
+
+	# these arguments are paths to files, and are required
+	for filename in [signer_cert_file, apple_cert_file]:
             if not os.path.exists(filename):
                 msg = "Can't find {0}".format(filename)
                 log.warn(msg)
                 raise MissingCredentials(msg)
-        self.signer_key_file = signer_key_file
         self.signer_cert_file = signer_cert_file
         self.apple_cert_file = apple_cert_file
 
-        self.team_id = team_id
+	self.team_id = team_id    # FIXME this seems backwards, we assign then reassign?
         team_id = self.get_team_id()
         if team_id is None:
             raise ImproperCredentials("Cert file does not contain Subject line"
@@ -163,7 +172,7 @@ class CmsSigner(object):
         return signature
 
     def sign(self, data, oldsig):
-        """ sign data, return string """
+	""" sign data, return string. Only modifies an existing CMS structure """
 
         parsed_sig = asn1crypto.cms.ContentInfo.load(oldsig)
 
@@ -181,7 +190,7 @@ class CmsSigner(object):
             to_sign = signer_info['signed_attrs'].dump()
             to_sign = '1' + to_sign[1:]  # change type from IMPLICIT [0] to EXPLICIT SET OF, per RFC 5652.
 
-            pkcs1sig = Pkcs1Signer(self.signer_key_file).sign(to_sign)
+	    pkcs1sig = self.signer.sign(to_sign)
 
             signer_info['signature'] = pkcs1sig
 
