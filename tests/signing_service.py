@@ -3,6 +3,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
 from isign.signer import Pkcs1Signer
 import json
+import os
 import pprint
 from signing_service_config import SigningServiceConfig
 
@@ -25,7 +26,7 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
 		"plaintext": [
 		    {
 			"key": "0",
-			"value": "Zm9vYmFyCg=="
+			"value": "Zm9vYmFyCg=="   # base64 encoded value
 			"algorithm": "SIGNATURE_RSA_PKCS1_SHA256"
 		    }
 		]
@@ -62,7 +63,6 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
 
 	if not message['key'] in cert_hash_to_signer:
 	    return self._client_error("Don't recognize that key")
-
 
 	pkcs1_signer = cert_hash_to_signer[message['key']]
 
