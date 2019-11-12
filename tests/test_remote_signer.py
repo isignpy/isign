@@ -1,113 +1,95 @@
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-import hashlib
+import base64
 from isign import isign
 from isign_base_test import IsignBaseTest
-import json
-
-import logging
+import os
+import pprint
+from signing_service_config import SigningServiceConfig
+import subprocess
 import requests
-
-import cgi
-
-
-
-log = logging.getLogger(__name__)
+import sys
+import time
 
 
-
-# Request format
-# {
-#    "key": certdata_sha1_hex_string,
-#    "plaintext": { "0": unsigned_data_hex_string },
-#    "algorithm": "SIGNATURE_RSA_RAW",
-# }
-
-config = [
-    {
-	key: IsignBaseTest.KEY,
-	certificate: IsignBaseTest.CERTIFICATE
-    }
-]
-
-signing_service_config = {}
-
-with open(item['certificate'], "r") as fh:
-    # NOTE: our test cert file is in PEM format.
-    # If hashes are based on what Keychain does, it will be different.
-    cert_sha1_hex = hashlib.sha1(fh.read()).hexdigest()
-    signing_service_config[cert_sha1_hex] = item['key']
-
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer
-import json
-import cgi
+CONFIG = SigningServiceConfig()
+pp = pprint.PrettyPrinter(indent=4)
 
 
-class Server(BaseHTTPRequestHandler):
-    def _set_headers(self):
-	self.send_response(200)
-	self.send_header('Content-type', 'application/json')
-	self.end_headers()
+class RemotePkcs1Signer(object):
+    """ Client-side Signer subclass, that calls the Signing Service over HTTP to sign things """
 
-    # POST echoes the message adding a JSON field
-    def do_POST(self):
-	ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+    # payload should look like this, for the string 'foobar'.
+    #
+    # {"key": "demo-signing-with-haas", "plaintext": [{"key": "0", "value": "Zm9vYmFyCg=="}],
+    #    "algorithm": "SIGNATURE_RSA_PKCS1_SHA256"}
 
-	# refuse to receive non-json content
-	if ctype != 'application/json':
-	    self.send_response(400)
-	    self.end_headers()
-	    return
+    # Expected return:
+    # {
+    #     "signature": { "0": detached_signature_hex_string }
+    # }
 
-	# read the message and convert it into a python dictionary
-	length = int(self.headers.getheader('content-length'))
-	message = json.loads(self.rfile.read(length))
+    def __init__(self, host, port, key, algorithm="SIGNATURE_RSA_PKCS1_SHA256"):
+	self.host = host
+	self.port = port
+	self.key = key
+	self.algorithm = algorithm
 
-	# add a property to the object, just to mess with data
-	message['received'] = 'ok'
-
-	# send the message back
-	self._set_headers()
-	self.wfile.write(json.dumps(message))
-
-
-def run(server_class=HTTPServer, handler_class=Server, port=8008):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-
-    print 'Starting httpd on port %d...' % port
-    httpd.serve_forever()
-
-class RemoteSigningService(object):
-    def do_POST(self, data):
-
-
-
-# TODO: when Signer is just a naked signing algorithm, do that instead
-# {
-#     "signature": { "0": detached_signature_hex_string }
-# }
-class RemoteSigner(isign.Signer):
-    def __init__(self):
-	#
     def sign(self, data):
-	requests.
+	plaintext_base64 = base64.b64encode(data)
+	plaintext_key = u'0'
+	payload = {
+	    "key": self.key,
+	    "plaintext": [{
+		"key": plaintext_key,
+		"value": plaintext_base64
+	    }],
+	    "algorithm": self.algorithm
+	}
+	headers = {
+	    'Content-Type': 'application/json',
+	    'Accept': 'application/json'
+	}
+	url = "http://{}:{}/".format(CONFIG.host, CONFIG.port)
 
-
+	response = requests.post(url, json=payload, headers=headers).json()
+	signature = base64.b64decode(response[u'signature'][plaintext_key])
+	return signature
 
 
 class TestRemoteSigner(IsignBaseTest):
 
-    def test_remote_signer(self):
+    def start_httpd(self):
+	test_dir = os.path.dirname(os.path.abspath(__file__))
+	start_httpd_command = [sys.executable, os.path.join(test_dir, "signing_service.py")]
+	httpd_process = subprocess.Popen(start_httpd_command)
+	return httpd_process
 
-	isign.resign(
-	    IsignBaseTest.TEST_IPA,
-	    provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
-	    output_path=output_path,
-	    signer_class=RemoteSigner,
-	    signer_arguments={
-		'certificate': IsignBaseTest.CERTIFICATE,
-		'apple_certificate': isign.isign.DEFAULT_APPLE_CERT_PATH
-	    }
-	)
+    def test_remote_signer(self):
+	output_path = self.get_temp_file()
+
+	httpd_process = None
+
+	try:
+	    httpd_process = self.start_httpd()
+	    time.sleep(2)
+
+	    isign.resign(
+		IsignBaseTest.TEST_IPA,
+		key=None,   # ugh this is so ugly, we should introduce defaults in command line processing,
+			    # not later
+		certificate=IsignBaseTest.CERTIFICATE,
+		provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
+		output_path=output_path,
+		signer_class=RemotePkcs1Signer,    # This is also ugly. Perhaps there should be a different interface
+		signer_arguments={
+		    'host': CONFIG.host,
+		    'port': CONFIG.port,
+		    'key': CONFIG.cert_hash_to_key_file.keys()[0]
+		}
+	    )
+	    # test the output path for correctness
+	finally:
+	    if httpd_process is not None:
+		httpd_process.kill()
+
+

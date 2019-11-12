@@ -239,7 +239,7 @@ class App(Bundle):
         log.debug("wrote Entitlements to {0}".format(entitlements_path))
         self.entitlements_path = entitlements_path
 
-    def resign(self, deep, signer, provisioning_profile, alternate_entitlements_path=None):
+    def resign(self, deep, cms_signer, provisioning_profile, alternate_entitlements_path=None):
         """ signs app in place """
 
         # TODO all this mucking about with entitlements feels wrong. The entitlements_path is
@@ -248,7 +248,7 @@ class App(Bundle):
         # and then embed it into CmsSigner?
 
         # In the typical case, we add entitlements from the pprof into the app's signature
-        if not signer.is_adhoc():
+	if not cms_signer.is_adhoc():
             if alternate_entitlements_path is None:
                 # copy the provisioning profile in
                 self.provision(provisioning_profile)
@@ -259,4 +259,4 @@ class App(Bundle):
             self.write_entitlements(entitlements)
 
         # actually resign this bundle now
-        super(App, self).resign(deep, signer)
+	super(App, self).resign(deep, cms_signer)

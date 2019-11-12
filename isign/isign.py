@@ -73,12 +73,18 @@ def resign(input_path,
            alternate_entitlements_path=None):
     """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner and set default arguments """
 
-    signer = signer_class(signer_key_file=key, **signer_arguments)
+    if key is not None:
+	    signer_arguments['signer_key_file'] = key
+    signer = signer_class(**signer_arguments)
+
+    cms_signer = CmsSigner(signer,
+                           apple_cert_file=apple_cert,
+		                   signer_cert_file=certificate)
 
     try:
         return archive.resign(input_path,
                               deep,
-                              signer,
+            			      cms_signer,
                               provisioning_profile,
                               output_path,
                               info_props,
