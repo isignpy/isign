@@ -28,9 +28,14 @@ class RemotePkcs1Signer(object):
     #     "signature": { "0": detached_signature_hex_string }
     # }
 
+    # standard headers for request
+    headers = {
+	'Content-Type': 'application/json',
+	'Accept': 'application/json'
+    }
+
     def __init__(self, host, port, key, algorithm="SIGNATURE_RSA_PKCS1_SHA256"):
-	self.host = host
-	self.port = port
+	self.endpoint = "http://{}:{}/".format(host, port)
 	self.key = key
 	self.algorithm = algorithm
 
@@ -45,13 +50,10 @@ class RemotePkcs1Signer(object):
 	    }],
 	    "algorithm": self.algorithm
 	}
-	headers = {
-	    'Content-Type': 'application/json',
-	    'Accept': 'application/json'
-	}
-	url = "http://{}:{}/".format(CONFIG.host, CONFIG.port)
 
-	response = requests.post(url, json=payload, headers=headers).json()
+	response = requests.post(self.endpoint,
+				 headers=self.__class__.headers,
+				 json=payload).json()
 	signature = base64.b64decode(response[u'signature'][plaintext_key])
 	return signature
 
