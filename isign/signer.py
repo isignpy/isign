@@ -100,31 +100,32 @@ class CmsSigner(object):
     """ collaborator, holds the keys, identifiers for signer,
         and knows how to sign data """
     def __init__(self,
-		         signer,
+                 signer,
                  signer_cert_file=None,
                  apple_cert_file=None,
                  team_id=None):
-	    """ signer: an initialized Signer module
+        """ signer: an initialized Signer module
             signer_cert_file = your org's cert .pem
             apple_cert_file = apple certs in .pem form
             team_id = your Apple Organizational Unit code """
 
-	    log.debug('Signing with signer: {}'.format(signer.__class__.__name__))
+        log.debug('Signing with signer: {}'.format(signer.__class__.__name__))
         log.debug('Signing with certificate: {}'.format(signer_cert_file))
 
-    	# This should have been initialized by our caller
-	    self.signer = signer
+        # This should have been initialized by our caller
+        self.signer = signer
 
-	    # these arguments are paths to files, and are required
-	    for filename in [signer_cert_file, apple_cert_file]:
+        # these arguments are paths to files, and are required
+        for filename in [signer_cert_file, apple_cert_file]:
             if not os.path.exists(filename):
                 msg = "Can't find {0}".format(filename)
                 log.warn(msg)
                 raise MissingCredentials(msg)
+
         self.signer_cert_file = signer_cert_file
         self.apple_cert_file = apple_cert_file
 
-	    self.team_id = team_id    # FIXME this seems backwards, we assign then reassign?
+        self.team_id = team_id    # FIXME this seems backwards, we assign then reassign?
         team_id = self.get_team_id()
         if team_id is None:
             raise ImproperCredentials("Cert file does not contain Subject line"
