@@ -68,7 +68,7 @@ def resign(input_path,
            provisioning_profile=DEFAULT_CREDENTIAL_PATHS['provisioning_profile'],
            output_path=join(os.getcwd(), "out"),
            signer_class=None,
-           signer_arguments=None,
+           signer_arguments={},
            info_props=None,
            alternate_entitlements_path=None):
     """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner and set default arguments """
