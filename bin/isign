@@ -2,7 +2,7 @@
 
 import argparse
 from isign import isign
-import importlib   # this will make __import__ available
+import importlib
 from os.path import abspath, expanduser
 import logging
 
@@ -182,7 +182,7 @@ def import_class(name):
     components = name.split('.')
     module_name = '.'.join(components[0:-1])
     class_name = components[-1]
-    mod = __import__(module_name, fromlist=[class_name])
+    mod = importlib.import_module(module_name)
     return getattr(mod, class_name)
 
 
