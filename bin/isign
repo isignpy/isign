@@ -153,7 +153,6 @@ def parse_args():
         dest='signer_class_name',
         action='store',
         metavar='<SignerModuleName.SignerClassName>',
-        type=absolute_path_argument,
         help='Name of alternate signer module. Must be discoverable via PYTHONPATH',
     )
     parser.add_argument(
@@ -183,7 +182,7 @@ def import_class(name):
     components = name.split('.')
     module_name = '.'.join(components[0:-1])
     class_name = components[-1]
-    mod = __import__(module_name, fromlist=[class_name])
+    mod = importlib.import_module(module_name)
     return getattr(mod, class_name)
 
 
@@ -228,9 +227,9 @@ if __name__ == '__main__':
 
         if args.signer_class_name:
             # This could raise an ImportException but we'll let the exception bubble
-            args.signer_class = import_class(args.signer_class)
+            args.signer_class = import_class(args.signer_class_name)
 
-            signer_arguments = {}
+            args.signer_arguments = {}
             if args.signer_argument_pairs:
                 for pair in args.signer_argument_pairs:
                     if '=' not in pair:

@@ -32,7 +32,7 @@ get_cert() {
 }
 
 target_cert=$(get_cert $cert_path)
-find "$PROVISIONING_PROFILE_DIR/mobdev1.mobileprovision" -type f -print0 | while IFS= read -r -d '' mobileprovision; do
+find "$PROVISIONING_PROFILE_DIR" -type f -print0 | while IFS= read -r -d '' mobileprovision; do
     # extract the cert from the mobileprovision with `security`
     mobileprovision_data=$(security cms -D -i "$mobileprovision")
     # PlistBuddy doesn't give array lengths, so we don't know how many certs this mobileprovision might have. Try a few

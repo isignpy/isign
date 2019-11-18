@@ -40,5 +40,5 @@ echo "Exported credentials from $p12_path to $target_dir"
 read -p "Find matching provisioning profile? [Y/n]:" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    ./guess_mobileprovision.sh $target_cert_path
+    isign_guess_mobileprovision.sh $target_cert_path
 fi

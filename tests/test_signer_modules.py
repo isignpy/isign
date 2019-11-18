@@ -4,8 +4,8 @@ import logging
 from os.path import dirname, join, realpath
 import sys
 
-
 log = logging.getLogger(__name__)
+
 
 class TestSignerModules(IsignBaseTest):
 
@@ -14,8 +14,9 @@ class TestSignerModules(IsignBaseTest):
         lib_dir_path = join(dirname(realpath(__file__)), 'TestPythonLibDir')
         log.debug("library directory: {}".format(lib_dir_path))
 
-        calls = []   # Py2 won't allow to refer to outer scope by assignment, e.g. isCalled = True
-                     # To let the outer scope know a thing happened, must alter a mutable object - like an array!
+        calls = []  # Py2 won't allow to refer to outer scope by assignment, e.g. isCalled = True
+
+        # To let the outer scope know a thing happened, must alter a mutable object - like an array!
         def callback(x):
             log.debug("The callback was fired")
             calls.append(x)
@@ -24,12 +25,12 @@ class TestSignerModules(IsignBaseTest):
 
         try:
             sys.path.append(lib_dir_path)
-            print sys.path
 
-            from FooSigner import FooSigner
+            from CallbackSigner import CallbackSigner
 
             isign.resign(
                 IsignBaseTest.TEST_IPA,
+                certificate=IsignBaseTest.CERTIFICATE,
                 provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
                 output_path=output_path,
                 signer_class=FooSigner,
