@@ -25,7 +25,6 @@ class TestSignerModules(IsignBaseTest):
 
         try:
             sys.path.append(lib_dir_path)
-            print sys.path
 
             from CallbackSigner import CallbackSigner
 
