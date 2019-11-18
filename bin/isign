@@ -2,7 +2,7 @@
 
 import argparse
 from isign import isign
-import importlib
+import importlib   # this will make __import__ available
 from os.path import abspath, expanduser
 import logging
 
@@ -153,7 +153,6 @@ def parse_args():
         dest='signer_class_name',
         action='store',
         metavar='<SignerModuleName.SignerClassName>',
-        type=absolute_path_argument,
         help='Name of alternate signer module. Must be discoverable via PYTHONPATH',
     )
     parser.add_argument(
@@ -228,7 +227,7 @@ if __name__ == '__main__':
 
         if args.signer_class_name:
             # This could raise an ImportException but we'll let the exception bubble
-            args.signer_class = import_class(args.signer_class)
+            args.signer_class = import_class(args.signer_class_name)
 
             signer_arguments = {}
             if args.signer_argument_pairs:
