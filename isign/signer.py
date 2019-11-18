@@ -99,6 +99,7 @@ class Pkcs1Signer(object):
 class CmsSigner(object):
     """ collaborator, holds the keys, identifiers for signer,
         and knows how to sign data """
+
     def __init__(self,
                  signer,
                  signer_cert_file=None,
@@ -125,7 +126,7 @@ class CmsSigner(object):
         self.signer_cert_file = signer_cert_file
         self.apple_cert_file = apple_cert_file
 
-        self.team_id = team_id    # FIXME this seems backwards, we assign then reassign?
+        self.team_id = team_id  # FIXME this seems backwards, we assign then reassign?
         team_id = self.get_team_id()
         if team_id is None:
             raise ImproperCredentials("Cert file does not contain Subject line"
@@ -166,7 +167,7 @@ class CmsSigner(object):
     #     return signature
 
     def sign(self, data, oldsig):
-	""" sign data, return string. Only modifies an existing CMS structure """
+        """ sign data, return string. Only modifies an existing CMS structure """
 
         parsed_sig = asn1crypto.cms.ContentInfo.load(oldsig)
 
@@ -184,7 +185,7 @@ class CmsSigner(object):
             to_sign = signer_info['signed_attrs'].dump()
             to_sign = '1' + to_sign[1:]  # change type from IMPLICIT [0] to EXPLICIT SET OF, per RFC 5652.
 
-	    pkcs1sig = self.signer.sign(to_sign)
+            pkcs1sig = self.signer.sign(to_sign)
 
             signer_info['signature'] = pkcs1sig
 
@@ -226,6 +227,7 @@ class CmsSigner(object):
 
     def is_adhoc(self):
         return False
+
 
 class AdhocCmsSigner(CmsSigner):
     def __init__(self):

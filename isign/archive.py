@@ -17,7 +17,6 @@ from subprocess import call
 import shutil
 import zipfile
 
-
 REMOVE_WATCHKIT = True
 helper_paths = {}
 log = logging.getLogger(__name__)
@@ -82,6 +81,7 @@ def process_watchkit(root_bundle_path, should_remove=False):
 
 class Archive(object):
     __metaclass__ = abc.ABCMeta
+
     # we use abc.abstractmethod throughout because there are certain class
     # methods we want to ensure are implemented.
 
@@ -297,6 +297,7 @@ class UncompressedArchive(object):
 
         This class is also useful if you have an app that's already unzipped and
         you want to sign it. """
+
     def __init__(self, path, relative_bundle_dir, archive_class):
         """ Path is the "Containing dir", the dir at the root level of the unzipped archive
                 (or the dir itself, in the case of an AppArchive archive)
@@ -360,7 +361,7 @@ def view(input_path):
 
 def resign(input_path,
            deep,
-	   cms_signer,
+           cms_signer,
            provisioning_profile,
            output_path,
            info_props=None,
@@ -382,7 +383,7 @@ def resign(input_path,
         if info_props:
             # Override info.plist props of the parent bundle
             ua.bundle.update_info_props(info_props)
-	ua.bundle.resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
+        ua.bundle.resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
         bundle_info = ua.bundle.info
         ua.archive(output_path)
     except NotSignable as e:
@@ -393,4 +394,3 @@ def resign(input_path,
         if ua is not None:
             ua.remove()
     return bundle_info
-

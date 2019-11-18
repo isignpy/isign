@@ -21,7 +21,6 @@ from signer import openssl_command
 import signable
 import shutil
 
-
 log = logging.getLogger(__name__)
 
 
@@ -32,8 +31,9 @@ def is_info_plist_native(plist):
     be signed (at least ad hoc).
     """
     return (
-        'CFBundleSupportedPlatforms' in plist and
-        ('iPhoneOS' in plist['CFBundleSupportedPlatforms'] or 'iPhoneSimulator' in plist['CFBundleSupportedPlatforms'])
+            'CFBundleSupportedPlatforms' in plist and
+            ('iPhoneOS' in plist['CFBundleSupportedPlatforms'] or 'iPhoneSimulator' in plist[
+                'CFBundleSupportedPlatforms'])
     )
 
 
@@ -215,8 +215,8 @@ class App(Bundle):
         cmd = [
             'smime',
             '-inform', 'der',
-            '-verify',    # verifies content, prints verification status to STDERR,
-                          #  outputs content to STDOUT. In our case, will be an XML plist
+            '-verify',  # verifies content, prints verification status to STDERR,
+            #  outputs content to STDOUT. In our case, will be an XML plist
             '-noverify',  # accept self-signed certs. Not the opposite of -verify!
             '-in', provision_path
         ]
@@ -248,7 +248,7 @@ class App(Bundle):
         # and then embed it into CmsSigner?
 
         # In the typical case, we add entitlements from the pprof into the app's signature
-	if not cms_signer.is_adhoc():
+        if not cms_signer.is_adhoc():
             if alternate_entitlements_path is None:
                 # copy the provisioning profile in
                 self.provision(provisioning_profile)
@@ -259,4 +259,4 @@ class App(Bundle):
             self.write_entitlements(entitlements)
 
         # actually resign this bundle now
-	super(App, self).resign(deep, cms_signer)
+        super(App, self).resign(deep, cms_signer)

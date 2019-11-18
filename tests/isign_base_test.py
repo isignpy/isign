@@ -12,16 +12,16 @@ log = logging.getLogger(__name__)
 
 class IsignBaseTest(unittest.TestCase):
     TEST_DIR = dirname(__file__)
-    TEST_APP = join(TEST_DIR, 'Test.app')   # FIXME, ios11+ or maybe don't even bother any more
+    TEST_APP = join(TEST_DIR, 'Test.app')  # FIXME, ios11+ or maybe don't even bother any more
     TEST_APP_CODESIG_STR = join(TEST_DIR,
-				'Test.app.codesig.construct.txt') # FIXME, ios11+
-    TEST_APPZIP = TEST_APP + '.zip'   # FIXME, ios11+ or maybe don't even bother any more
+                                'Test.app.codesig.construct.txt')  # FIXME, ios11+
+    TEST_APPZIP = TEST_APP + '.zip'  # FIXME, ios11+ or maybe don't even bother any more
     TEST_IPA = join(TEST_DIR, 'Test.ipa')
     TEST_WITH_FRAMEWORKS_IPA = join(TEST_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
     TEST_NONAPP_DIR = join(TEST_DIR, 'NotAnAppDir')
     TEST_NONAPP_TXT = join(TEST_DIR, 'NotAnApp.txt')
     TEST_NONAPP_IPA = join(TEST_DIR, 'NotAnApp.ipa')
-    TEST_SIMULATOR_APP = join(TEST_DIR, 'TestSimulator.app.zip') # FIXME, ios11+
+    TEST_SIMULATOR_APP = join(TEST_DIR, 'TestSimulator.app.zip')  # FIXME, ios11+
     KEY = join(TEST_DIR, 'credentials', 'test.key.pem')
     CERTIFICATE = join(TEST_DIR, 'credentials', 'test.cert.pem')
     PROVISIONING_PROFILE = join(TEST_DIR, 'credentials', 'test.mobileprovision')
@@ -31,7 +31,6 @@ class IsignBaseTest(unittest.TestCase):
 
     TEST_UNSIGNED_THIN_APP = join(TEST_DIR, 'Test_unsigned_thin.app')
     TEST_UNSIGNED_FAT_APP = join(TEST_DIR, 'Test_unsigned_fat.app')
-
 
     # Fake Apple organizational unit
     OU = 'ISIGNTESTS'
@@ -47,7 +46,8 @@ class IsignBaseTest(unittest.TestCase):
         if len(remaining_temp_files) != 0:
             log.error("remaining temp files: %s",
                       ', '.join(remaining_temp_files))
-#        assert len(remaining_temp_files) == 0
+
+    #        assert len(remaining_temp_files) == 0
 
     def resign(self, filename, **args):
         """ resign with test credentials """
