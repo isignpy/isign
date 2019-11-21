@@ -17,6 +17,8 @@ import os.path
 import subprocess
 import re
 import asn1crypto.cms
+import asn1crypto.pem
+import asn1crypto.x509
 import binascii
 import hashlib
 from datetime import datetime
@@ -171,7 +173,16 @@ class CmsSigner(object):
 
         parsed_sig = asn1crypto.cms.ContentInfo.load(oldsig)
 
+        with open(self.signer_cert_file, 'rb') as fh:
+            _, _, der_bytes = asn1crypto.pem.unarmor(fh.read())
+            cert = asn1crypto.x509.Certificate.load(der_bytes)
+
         for signer_info in parsed_sig['content']['signer_infos']:
+            # Update signer cert info
+            signer_info['sid'] = asn1crypto.cms.SignerIdentifier(
+                'issuer_and_serial_number',
+                asn1crypto.cms.IssuerAndSerialNumber(dict(issuer=cert.issuer, serial_number=cert.serial_number)))
+
             # Update signingTime
             signer_info['signed_attrs'][1][1][0] = asn1crypto.cms.Time("utc_time", datetime.utcnow())
             # Update messageDigest
