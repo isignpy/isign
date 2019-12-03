@@ -18,8 +18,13 @@ class CodeDirectorySlot(object):
     def __init__(self, codesig):
         self.codesig = codesig
 
-    def get_hash(self):
-        return hashlib.sha256(self.get_contents()).digest()
+    def get_hash(self, hash_type):
+        if hash_type == 1:
+            return hashlib.sha1(self.get_contents()).digest()
+        elif hash_type == 2:
+            return hashlib.sha256(self.get_contents()).digest()
+        else:
+            raise ValueError("unknown hash type %s" % (hash_type,))
 
 
 class EntitlementsSlot(CodeDirectorySlot):
@@ -32,14 +37,15 @@ class EntitlementsSlot(CodeDirectorySlot):
 class ApplicationSlot(CodeDirectorySlot):
     offset = -4
 
-    def get_hash(self):
-        return '\x00' * (20 if hash_algorithm == 'sha1' else 32)
+    def get_hash(self, hash_type):
+        return '\x00' * (20 if hash_type == 1 else 32)
 
 
 class ResourceDirSlot(CodeDirectorySlot):
     offset = -3
 
-    def __init__(self, seal_path):
+    def __init__(self, codesig, seal_path):
+        super(ResourceDirSlot, self).__init__(codesig)
         self.seal_path = seal_path
 
     def get_contents(self):
@@ -63,6 +69,9 @@ class InfoSlot(CodeDirectorySlot):
         return open(self.info_path, "rb").read()
 
 
+class MultipleEntriesException(Exception):
+    pass
+
 # Represents a code signature object, aka the LC_CODE_SIGNATURE,
 # within the Signable
 class Codesig(object):
@@ -70,19 +79,22 @@ class Codesig(object):
     def __init__(self, signable, data):
         self.signable = signable
         self.construct = macho_cs.Blob.parse(data)
-        self.is_sha256 = len(self.construct.data.BlobIndex) >= 6  # FIXME: nonsense
-
-    def is_sha256_signature(self):
-        return self.is_sha256
 
     def build_data(self):
         return macho_cs.Blob.build(self.construct)
 
+    def get_blobs(self, magic):
+        return [index.blob
+                for index in self.construct.data.BlobIndex
+                if index.blob.magic == magic]
+
     def get_blob(self, magic):
-        for index in self.construct.data.BlobIndex:
-            if index.blob.magic == magic:
-                return index.blob
-        raise KeyError(magic)
+        blobs = self.get_blobs(magic)
+        if not blobs:
+            raise KeyError(magic)
+        if len(blobs) > 1:
+            raise MultipleEntriesException(len(blobs))
+        return blobs[0]
 
     def get_blob_data(self, magic):
         """ convenience method, if we just want the data """
@@ -167,14 +179,15 @@ class Codesig(object):
         # requirements_data = macho_cs.Blob_.build(requirements)
         # log.debug(hashlib.sha1(requirements_data).hexdigest())
 
-    def get_codedirectory(self):
-        return self.get_blob('CSMAGIC_CODEDIRECTORY')
+    def get_codedirectories(self):
+        return self.get_blobs('CSMAGIC_CODEDIRECTORY')
 
     def get_codedirectory_hash_index(self, slot):
         """ The slots have negative offsets, because they start from the 'top'.
             So to get the actual index, we add it to the length of the
             slots. """
-        return slot.offset + self.get_codedirectory().data.nSpecialSlots
+        # FIXME
+        return slot.offset + self.get_codedirectories()[0].data.nSpecialSlots
 
     def has_codedirectory_slot(self, slot):
         """ Some dylibs have all 5 slots, even though technically they only need
@@ -187,14 +200,15 @@ class Codesig(object):
     def fill_codedirectory_slot(self, slot):
         if self.signable.should_fill_slot(self, slot):
             index = self.get_codedirectory_hash_index(slot)
-            self.get_codedirectory().data.hashes[index] = slot.get_hash()
+            for codedirectory in self.get_codedirectories():
+                codedirectory.data.hashes[index] = slot.get_hash(codedirectory.data.hashType)
 
     def set_codedirectory(self, seal_path, info_path, signer):
         if self.has_codedirectory_slot(EntitlementsSlot) and not signer.is_adhoc():
             self.fill_codedirectory_slot(EntitlementsSlot(self))
 
         if self.has_codedirectory_slot(ResourceDirSlot):
-            self.fill_codedirectory_slot(ResourceDirSlot(seal_path))
+            self.fill_codedirectory_slot(ResourceDirSlot(self, seal_path))
 
         if self.has_codedirectory_slot(RequirementsSlot):
             self.fill_codedirectory_slot(RequirementsSlot(self))
@@ -205,24 +219,24 @@ class Codesig(object):
         if self.has_codedirectory_slot(InfoSlot):
             self.fill_codedirectory_slot(InfoSlot(info_path))
 
-        cd = self.get_codedirectory()
-        cd.data.teamID = signer.get_team_id()
+        for cd in self.get_codedirectories():
+            cd.data.teamID = signer.get_team_id()
 
-        changed_bundle_id = self.signable.get_changed_bundle_id()
-        if changed_bundle_id:
-            offset_change = len(changed_bundle_id) - len(cd.data.ident)
-            cd.data.ident = changed_bundle_id
-            cd.data.hashOffset += offset_change
-            if cd.data.teamIDOffset is None:
-                cd.data.teamIDOffset = offset_change
-            else:
-                cd.data.teamIDOffset += offset_change
-            cd.length += offset_change
+            changed_bundle_id = self.signable.get_changed_bundle_id()
+            if changed_bundle_id:
+                offset_change = len(changed_bundle_id) - len(cd.data.ident)
+                cd.data.ident = changed_bundle_id
+                cd.data.hashOffset += offset_change
+                if cd.data.teamIDOffset is None:
+                    cd.data.teamIDOffset = offset_change
+                else:
+                    cd.data.teamIDOffset += offset_change
+                cd.length += offset_change
 
-        cd.bytes = macho_cs.CodeDirectory.build(cd.data)
-        # open("cdrip", "wb").write(cd_data)
-        log.debug("CDHash sha1:" + hashlib.sha1(cd.bytes).hexdigest())
-        log.debug("CDHash sha256:" + hashlib.sha256(cd.bytes).hexdigest())
+            cd.bytes = macho_cs.CodeDirectory.build(cd.data)
+            # open("cdrip", "wb").write(cd_data)
+            log.debug("CDHash sha1:" + hashlib.sha1(cd.bytes).hexdigest())
+            log.debug("CDHash sha256:" + hashlib.sha256(cd.bytes).hexdigest())
 
     def set_signature(self, signer):
         # TODO how do we even know this blobwrapper contains the signature?
@@ -233,7 +247,12 @@ class Codesig(object):
         oldsig = sigwrapper.bytes.value
         # signer._log_parsed_asn1(sigwrapper.data.data.value)
         # open("sigrip.der", "wb").write(sigwrapper.data.data.value)
-        cd_data = self.get_blob_data('CSMAGIC_CODEDIRECTORY')
+
+        cds = self.get_blobs('CSMAGIC_CODEDIRECTORY')
+        # find one with the newest (highest) hashType to sign
+        cd = sorted(cds, key=lambda x: -x.data.hashType)[0]
+        cd_data = macho_cs.Blob_.build(cd)
+
         sig = signer.sign(cd_data, oldsig)
         # log.debug("sig len: {0}".format(len(sig)))
         # log.debug("old sig len: {0}".format(len(oldsig)))
@@ -259,36 +278,6 @@ class Codesig(object):
     def resign(self, bundle, signer):
         """ Do the actual signing. Create the structure and then update all the
             byte offsets """
-        if self.is_sha256_signature():
-            # FIXME: broken hack to remove sha256 sig
-            # Might be an app signed from Xcode 7.3+ with sha256 stuff
-            codedirs = []
-            for i, index in enumerate(self.construct.data.BlobIndex):
-                if index.blob.magic == 'CSMAGIC_CODEDIRECTORY':
-                    codedirs.append(i)
-
-            if len(codedirs) == 2 and False:
-                # Remove the sha256 code directory
-                i = codedirs.pop()
-                if (len(self.construct.data.BlobIndex) <= i + 1 or
-                        self.construct.data.BlobIndex[i + 1].blob.magic != 'CSMAGIC_BLOBWRAPPER'):
-                    # There's no following blobwrapper
-                    raise Exception("Could not find blob wrapper!")
-
-                del self.construct.data.BlobIndex[i]
-                removed = 1
-                # CSMAGIC_BLOBWRAPPER is now at index i
-
-                # Remove any previous CSMAGIC_BLOBWRAPPERs, the last one is at the expected position
-                for j in reversed(xrange(i)):
-                    if self.construct.data.BlobIndex[j].blob.magic == 'CSMAGIC_BLOBWRAPPER':
-                        del self.construct.data.BlobIndex[j]
-                        removed += 1
-
-                self.construct.data.count -= removed
-
-            elif len(codedirs) > 2:
-                raise Exception("Too many code directories (%d)" % len(codedirs))
 
         # TODO - the way entitlements are handled is a code smell
         # 1 - We're doing a hasattr to detect whether it's a top-level app. isinstance(App, bundle) ?
