@@ -151,8 +151,7 @@ class Signable(object):
             # No Info.plist changes, don't fill
             return False
 
-        if slot_class == ApplicationSlot and not codesig.is_sha256_signature():
-            # Application slot only needs to be zeroed out when there's a sha256 layer
+        if slot_class == ApplicationSlot:
             return False
 
         return True
