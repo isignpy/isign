@@ -17,11 +17,14 @@ import os.path
 import subprocess
 import re
 import asn1crypto.cms
+import asn1crypto.core
 import asn1crypto.pem
 import asn1crypto.x509
 import binascii
 import hashlib
+import plistlib
 from datetime import datetime
+from macho_cs import SHA1_HASHTYPE, SHA256_HASHTYPE
 
 OPENSSL = os.getenv('OPENSSL', spawn.find_executable('openssl', os.getenv('PATH', '')))
 # modern OpenSSL versions look like '0.9.8zd'. Use a regex to parse
@@ -168,7 +171,7 @@ class CmsSigner(object):
     #                                                   len(signature)))
     #     return signature
 
-    def sign(self, data, oldsig):
+    def sign(self, oldsig, cd_hashes):
         """ sign data, return string. Only modifies an existing CMS structure """
 
         parsed_sig = asn1crypto.cms.ContentInfo.load(oldsig)
@@ -185,13 +188,42 @@ class CmsSigner(object):
 
             # Update signingTime
             signer_info['signed_attrs'][1][1][0] = asn1crypto.cms.Time("utc_time", datetime.utcnow())
-            # Update messageDigest
-            signer_info['signed_attrs'][2][1][0] = hashlib.sha256(data).digest()
 
-            # This line is necessary to make the next one work! Pretty gross.
-            signer_info['signed_attrs'].native
-            # Truncate signed_attrs to remove new custom Apple fields, until we can figure out how to update them.
-            signer_info['signed_attrs'] = signer_info['signed_attrs'][:3]
+            # Update messageDigest
+            signer_info['signed_attrs'][2][1][0] = cd_hashes[0][SHA256_HASHTYPE]
+
+            # Update complete list of CodeDirectory hashes
+            SHA1_OID = '1.3.14.3.2.26'
+            SHA256_OID = '2.16.840.1.101.3.4.2.1'
+
+
+            class HashEntry(asn1crypto.core.Sequence):
+                _fields = [("ident", asn1crypto.core.ObjectIdentifier),
+                           ("value", asn1crypto.core.OctetString)]
+
+            for i, entry in enumerate(signer_info['signed_attrs'][3][1]):
+                parsed = entry.parse()
+
+                if parsed[0].native == SHA1_OID:
+                    for cd_hash in cd_hashes:
+                        if cd_hash['hashType'] == SHA1_HASHTYPE:
+                            val = cd_hash[SHA1_HASHTYPE]
+                elif parsed[0].native == SHA256_OID:
+                    for cd_hash in cd_hashes:
+                        if cd_hash['hashType'] == SHA256_HASHTYPE:
+                            val = cd_hash[SHA256_HASHTYPE]
+                else:
+                    raise ValueError('unexpected entry %s' % parsed[0].native)
+                signer_info['signed_attrs'][3][1][i] = asn1crypto.core.Any(
+                    HashEntry({"ident": parsed[0],
+                               "value": asn1crypto.core.OctetString(val)}))
+
+            # Update plist of truncated CodeDirectory hashes
+            plist = plistlib.readPlistFromString(signer_info['signed_attrs'][4][1][0].native)
+            plist['cdhashes'] = [plistlib.Data(cd_hash[cd_hash['hashType']][:20])
+                                 for cd_hash in cd_hashes]
+            signer_info['signed_attrs'][4][1][0] = asn1crypto.core.Any(
+                asn1crypto.core.OctetString(plistlib.writePlistToString(plist)))
 
             to_sign = signer_info['signed_attrs'].dump()
             to_sign = '1' + to_sign[1:]  # change type from IMPLICIT [0] to EXPLICIT SET OF, per RFC 5652.

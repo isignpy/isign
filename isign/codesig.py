@@ -19,9 +19,9 @@ class CodeDirectorySlot(object):
         self.codesig = codesig
 
     def get_hash(self, hash_type):
-        if hash_type == 1:
+        if hash_type == macho_cs.SHA1_HASHTYPE:
             return hashlib.sha1(self.get_contents()).digest()
-        elif hash_type == 2:
+        elif hash_type == macho_cs.SHA256_HASHTYPE:
             return hashlib.sha256(self.get_contents()).digest()
         else:
             raise ValueError("unknown hash type %s" % (hash_type,))
@@ -38,7 +38,7 @@ class ApplicationSlot(CodeDirectorySlot):
     offset = -4
 
     def get_hash(self, hash_type):
-        return '\x00' * (20 if hash_type == 1 else 32)
+        return '\x00' * (20 if hash_type == macho_cs.SHA1_HASHTYPE else 32)
 
 
 class ResourceDirSlot(CodeDirectorySlot):
@@ -182,42 +182,50 @@ class Codesig(object):
     def get_codedirectories(self):
         return self.get_blobs('CSMAGIC_CODEDIRECTORY')
 
-    def get_codedirectory_hash_index(self, slot):
+    def get_codedirectory_hashes(self):
+        cd_datas = [(cd, macho_cs.Blob_.build(cd))
+                    for cd in self.get_codedirectories()]
+        return [{macho_cs.SHA1_HASHTYPE: hashlib.sha1(data).digest(),
+                 macho_cs.SHA256_HASHTYPE: hashlib.sha256(data).digest(),
+                 'hashType': cd.data.hashType}
+                for cd, data in cd_datas]
+
+    def get_codedirectory_hash_index(self, codedirectory, slot):
         """ The slots have negative offsets, because they start from the 'top'.
             So to get the actual index, we add it to the length of the
             slots. """
-        # FIXME
-        return slot.offset + self.get_codedirectories()[0].data.nSpecialSlots
+        return slot.offset + codedirectory.data.nSpecialSlots
 
-    def has_codedirectory_slot(self, slot):
+    def has_codedirectory_slot(self, codedirectory, slot):
         """ Some dylibs have all 5 slots, even though technically they only need
             the first 2. If this dylib only has 2 slots, some of the calculated
             indices for slots will be negative. This means we don't do
             those slots when resigning (for dylibs, they don't add any
             security anyway) """
-        return self.get_codedirectory_hash_index(slot) >= 0
+        return self.get_codedirectory_hash_index(codedirectory, slot) >= 0
 
-    def fill_codedirectory_slot(self, slot):
+    def fill_codedirectory_slot(self, codedirectory, slot):
         if self.signable.should_fill_slot(self, slot):
-            index = self.get_codedirectory_hash_index(slot)
-            for codedirectory in self.get_codedirectories():
-                codedirectory.data.hashes[index] = slot.get_hash(codedirectory.data.hashType)
+            index = self.get_codedirectory_hash_index(codedirectory, slot)
+            codedirectory.data.hashes[index] = slot.get_hash(codedirectory.data.hashType)
+
 
     def set_codedirectory(self, seal_path, info_path, signer):
-        if self.has_codedirectory_slot(EntitlementsSlot) and not signer.is_adhoc():
-            self.fill_codedirectory_slot(EntitlementsSlot(self))
+        for cd in self.get_codedirectories():
+            if self.has_codedirectory_slot(cd, EntitlementsSlot) and not signer.is_adhoc():
+                self.fill_codedirectory_slot(cd, EntitlementsSlot(self))
 
-        if self.has_codedirectory_slot(ResourceDirSlot):
-            self.fill_codedirectory_slot(ResourceDirSlot(self, seal_path))
+            if self.has_codedirectory_slot(cd, ResourceDirSlot):
+                self.fill_codedirectory_slot(cd, ResourceDirSlot(self, seal_path))
 
-        if self.has_codedirectory_slot(RequirementsSlot):
-            self.fill_codedirectory_slot(RequirementsSlot(self))
+            if self.has_codedirectory_slot(cd, RequirementsSlot):
+                self.fill_codedirectory_slot(cd, RequirementsSlot(self))
 
-        if self.has_codedirectory_slot(ApplicationSlot):
-            self.fill_codedirectory_slot(ApplicationSlot(self))
+            if self.has_codedirectory_slot(cd, ApplicationSlot):
+                self.fill_codedirectory_slot(cd, ApplicationSlot(self))
 
-        if self.has_codedirectory_slot(InfoSlot):
-            self.fill_codedirectory_slot(InfoSlot(info_path))
+            if self.has_codedirectory_slot(cd, InfoSlot):
+                self.fill_codedirectory_slot(cd, InfoSlot(info_path))
 
         for cd in self.get_codedirectories():
             cd.data.teamID = signer.get_team_id()
@@ -239,6 +247,22 @@ class Codesig(object):
             log.debug("CDHash sha256:" + hashlib.sha256(cd.bytes).hexdigest())
 
     def set_signature(self, signer):
+        # cds = self.get_codedirectories()
+        # print "ABOUT TO SIGN", len(cds), "cds"
+        # for i, cd in enumerate(cds):
+        #     print("cd", i)
+        #     for k, v in cd.iteritems():
+        #         if k == "data":
+        #             print "data:"
+        #             for k, v in v.iteritems():
+        #                 if k == "hashes":
+        #                     print " ", k, v[:5]
+        #                     print " ", "...", len(v)
+        #                 elif k != "bytes":
+        #                     print " ", k, v
+        #         elif k != "bytes":
+        #             print k, v
+
         # TODO how do we even know this blobwrapper contains the signature?
         # seems like this is a coincidence of the structure, where
         # it's the only blobwrapper at that level...
@@ -248,12 +272,7 @@ class Codesig(object):
         # signer._log_parsed_asn1(sigwrapper.data.data.value)
         # open("sigrip.der", "wb").write(sigwrapper.data.data.value)
 
-        cds = self.get_blobs('CSMAGIC_CODEDIRECTORY')
-        # find one with the newest (highest) hashType to sign
-        cd = sorted(cds, key=lambda x: -x.data.hashType)[0]
-        cd_data = macho_cs.Blob_.build(cd)
-
-        sig = signer.sign(cd_data, oldsig)
+        sig = signer.sign(oldsig, self.get_codedirectory_hashes())
         # log.debug("sig len: {0}".format(len(sig)))
         # log.debug("old sig len: {0}".format(len(oldsig)))
         # open("my_sigrip.der", "wb").write(sig)
