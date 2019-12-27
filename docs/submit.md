@@ -1,6 +1,6 @@
 # Submitting a resigned app to Apple
 
-Unfortunately, when using isign, you will not be able to simply use XCode to figure out signing and submitting
+Unfortunately, when using isign, you will not be able to simply let XCode figure out signing and submitting for you.
 
 Here are some possible procedures for doing this. They worked as of October 2019 with current MacOS and the 
 Apple Developer ecosystem.
@@ -9,7 +9,7 @@ Apple Developer ecosystem.
 
 We assume you are using the `bash` shell on a contemporary MacOS computer.
 
-The basic idea here is that we will resign the app locally, and then upload it to App Store Connect via `xcrun altool`.
+The overview: we will resign the app locally, and then upload it to App Store Connect via `xcrun altool`.
 
 ### Preparation (one-time only)
 
@@ -26,6 +26,8 @@ You might also want to add this to your `.bash_profile`, to set up paths to addi
 xcode-select -r     # to set up paths. 
 ```
 
+Once added, restart your terminal to get the correct paths.
+
 With your web browser, on `https://developer.apple.com/`, prepare your accounts and certificates for distribution.
 
 We'll also need to set up an "app password" to be used by `altool`. Log in to `https://appleid.apple.com/`, and
@@ -35,23 +37,31 @@ secure.
 ### Password security
 
 Later on you're going to need to use this password on the command line. _This is a potential 
-security vulnerability_. The command and its argumetns can be observed by other processes on your machine, and 
-it will automatically be stored in your `.bash_history`.
+security vulnerability_. The command and its arguments can be observed by other processes on your machine, and it will automatically be stored in your `.bash_history`.
 
-So, the best practice would be to store it someplace secure, and then obtain it for use on the command line, 
-in some way that doesn't leave traces.
+So, the best practice would be to store it someplace secure, and then obtain it for use on the command line, in some way that doesn't leave traces.
 
 Here are a couple of options:
 
 * Apple Keychain: If you choose to store the above password in the Apple Keychain, there is a way to use it directly
   with the command line for `altool` where you would normally use a password. See `man altool` for the details.
   
-* Other password managers: you can simply cut & paste from another password manager app. Personally, I use the 
-  LastPass `lastpass-cli` package. In my LastPass vault, I made a pseudo-website called "developer.apple.com-altool" 
-  without a username and using the altool password. Then I can do something like this:
-```bash
-$ export APP_STORE_PASSWORD=$(lpass show developer.apple.com-altool --password)
-```
+* Other password managers: you can simply cut & paste from your password manager app such as 1Password or Lastpass.
+  
+  Since you probably want to create builds very often, you can also try automating this with a command-line tool to 
+  retrieve secrets from your password manager. 
+    * [1Password command-line tool](https://1password.com/downloads/command-line/), or `brew install 1password-cli`
+    * [Lastpass command-line tool](https://support.logmeininc.com/lastpass/help/use-the-lastpass-command-line-application-lp040011) or `brew install lastpass-cli`
+  
+  For example, here's how one might use the LastPass `lastpass-cli` package.
+  
+  In your LastPass vault, make a pseudo-website called "developer.apple.com-altool" 
+  without a username and using the altool password as password. Then you can make a bash script 
+  like this:
+  ```bash
+  $ export APP_STORE_PASSWORD=$(lpass show developer.apple.com-altool --password)
+  ```
+  
 
 In the following examples, we'll assume that (somehow) the password exists in the environment variable 
 `$APP_STORE_PASSWORD`.
@@ -60,14 +70,20 @@ In the following examples, we'll assume that (somehow) the password exists in th
 
 Open your app project in XCode.
 
+
+
+#### Bundle version
 When you submit to Apple, you need to keep bumping the bundle version. If you don't have some automatic 
-way to do that, you can manually edit the file `Info.plist`. A simple thing to do is to call your first version 0.01,
-then increment to 0.02, etc. Enter the same string in:
+way to do that, you can manually edit the file `Info.plist` or use `isign`'s `-i` option to edit the values while resigning. TBD example. A simple thing to do is to call your first version 0.01,
+then increment to 0.02, etc.
+
+If you're using XCode, enter the same string in:
 
 * Bundle versions string, short
 * Bundle version
 
-At the top of the windowm select “Generic iOS Device” as your build target.
+
+At the top of the window select “Generic iOS Device” as your build target.
  
 Select “Product > Archive”.
 
@@ -107,3 +123,29 @@ $ xcrun altool --upload-app --file ./resigned.ipa --username "$APP_STORE_USERNAM
 ## Semi-automated procedure
 
 TBD - add an action to XCode build pipeline
+
+
+
+## Submitting a resigned app without source available
+
+This is for the unlikely case where you have an IPA, and want to resign it to for App Store Distribution with a completely different organization.
+
+First, be aware that if you try to distribute a resigned version of someone else's work without their permission, you are a) a bad person b) going to be in trouble. They have ways of catching you.
+
+In the event that you do have permission, or, if you simply want to do some testing of isign, here's how you would do it.
+
+You have to override the existing bundle identifier, from say `test.originalapp` to `com.example.myapp` this is what you need to do.
+
+Each app has a bundle identifier, like `com.example.mytestapp`.  You must:
+* Create an application record in App Store Connect.
+* Create an identifier matching this bundle
+* Create a certificate compatible with the iOS App Store for this identifier
+* Create a provisioning profile compatible with the iOS App Store and this bundle identifier.
+* when resigning, use the `-i` option to change the bundle when resigning, e.g.
+
+`isign -i CFBundleIdentifier=net.neilk.mytestapp -o resignedWithNewCFBI.ipa original.ipa`
+
+Many apps can be resigned with only the CFBundleIdentifier changed, but not all. For instance,
+apps that are part of an app group will need other properties edited.
+
+TBD: add docs for such properties here.
