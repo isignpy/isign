@@ -20,8 +20,6 @@ import asn1crypto.cms
 import asn1crypto.core
 import asn1crypto.pem
 import asn1crypto.x509
-import binascii
-import hashlib
 import plistlib
 from datetime import datetime
 from macho_cs import SHA1_HASHTYPE, SHA256_HASHTYPE
@@ -144,6 +142,17 @@ class CmsSigner(object):
         if not is_openssl_version_ok(openssl_version, MINIMUM_OPENSSL_VERSION):
             msg = "Signing may not work: OpenSSL version is {0}, need {1} !"
             log.warn(msg.format(openssl_version, MINIMUM_OPENSSL_VERSION))
+
+    def print_cms_structure(self, structure, filename):
+        """ Warning!! There is a bug which causes structure.debug to silently increase
+            the size of certain buffers. Semi-useful for debugging but you cannot trust the output
+            emitted, until we fix the bug in the underlying construct library """
+        old_stdout = sys.stdout
+        try:
+            sys.stdout = open(filename, 'w')
+            structure.debug()
+        finally:
+            sys.stdout = old_stdout
 
     # def sign_with_openssl_cms(self, data):
     #     """ sign data, return string; this is the old way to do it, kept
