@@ -10,6 +10,10 @@ from construct import *
 import plistlib
 
 
+SHA1_HASHTYPE = 1
+SHA256_HASHTYPE = 2
+
+
 class PlistAdapter(Adapter):
     def _encode(self, obj, context):
         return plistlib.writePlistToString(obj)

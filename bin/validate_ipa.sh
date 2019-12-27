@@ -17,6 +17,14 @@ cp "$ipa_file" "$tempdir"
 cd "$tempdir"
 unzip -qq "$ipa_basename"
 find "Payload" -type d -name "*.app" | while IFS= read -r appdir; do
+  find "$appdir" -name "*.dylib" | while IFS= read -r dylib; do
+      echo "checking $dylib..."
+      codesign -vv "$dylib";
+  done;
+  find "$appdir" -type d -name "*.framework" | while IFS= read -r framework; do
+      echo "checking $framework..."
+      codesign -vv "$framework";
+  done;
   echo "checking $appdir..."
   codesign -vv "$appdir";
 done;
