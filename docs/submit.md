@@ -1,8 +1,9 @@
+
 # Submitting a resigned app to Apple
 
 Unfortunately, when using isign, you will not be able to simply let XCode figure out signing and submitting for you.
 
-Here are some possible procedures for doing this. They worked as of October 2019 with current MacOS and the 
+Here are some possible procedures for doing this. They worked as of December 2019 with current MacOS and the
 Apple Developer ecosystem.
 
 ## Manual procedure
@@ -66,22 +67,99 @@ Here are a couple of options:
 In the following examples, we'll assume that (somehow) the password exists in the environment variable 
 `$APP_STORE_PASSWORD`.
 
+
+
+
+
 ### When you build your app
 
 Open your app project in XCode.
 
 
+#### Set up identifier on the App Store
 
-#### Bundle version
-When you submit to Apple, you need to keep bumping the bundle version. If you don't have some automatic 
-way to do that, you can manually edit the file `Info.plist` or use `isign`'s `-i` option to edit the values while resigning. TBD example. A simple thing to do is to call your first version 0.01,
-then increment to 0.02, etc.
+You need to prepare the app store to receive an app with this identifier.
 
-If you're using XCode, enter the same string in:
+In XCode, get the Bundle Identifier by clicking on the top node of the project, and in the
+editor pane, navigating to the "General" tab.
 
-* Bundle versions string, short
-* Bundle version
+Your Bundle Identifier will look something like `com.example.yourAppName`.
 
+Next, switch to a web browser. Log into [App Store Connect](https://appstoreconnect.apple.com/)
+
+Click "My Apps".
+
+Click the "+" symbol to add an app.
+
+Select a "New App"
+
+In the next form, fill it out as you please, but make sure to select:
+
+* Platforms: iOS
+
+* Bundle ID: Choose options that get you a Bundle ID as above, `com.example.yourAppName`.
+
+  You may end up choosing a combination of wildcard and suffix, such as
+  * `*` + `com.example.yourAppName` = `com.example.yourAppName`
+  * `com.example.*` + `yourAppName` = `com.example.yourAppName`
+
+#### Set up a distribution provisioning profile for this app.
+
+Your mileage may vary here, but sometimes the App Store does not like to use wildcard
+application identifiers. So, you will need to create a provisioning profile that
+matches the application identifier above, exactly.
+
+In a web browser, go to developer.apple.com > Certificates, Identifiers and Profiles.
+
+Register a new provisioning profile.
+
+Select Distribution > App Store
+
+Select the Application ID you just created above.
+
+Select Certificate to Include. (Note, you should have that certificate already in PEM form...)
+
+Download the new provisioning profile. You may get the option to install it into XCode (which of course you can do)
+but also make sure to download it to a location where you can use it in an isign command-line argument. For example:
+
+`isign -k yourKey.pem -c cert.pem -p <the provisioning profile you just downloaded...> yourApp.ipa`
+
+However, when doing doing app distribution, I like to use `isign`'s -n feature to point to a directory with the
+following well-known structure of `key.pem`, `certificate.pem`, and `isign.mobileprovision`.
+
+Here, I have a single directory with my usual key and certificate, which are symlinked in. And the specific
+provisioning profile for this app is availabvle in this directory as a regular file, renamed to `isign.mobileprovision`.
+
+```
+$ ls -la ~/.isign-distribution-isignTestApp/
+total 16
+drwxr-xr-x    5 neilk  staff   160 Dec 29 14:30 .
+drwxr-xr-x+ 236 neilk  staff  7552 Dec 29 14:39 ..
+lrwxr-xr-x    1 neilk  staff    38 Dec 29 14:29 certificate.pem -> ../.isign-distribution/certificate.pem
+-rw-r--r--@   1 neilk  staff  7343 Dec 29 14:30 isign.mobileprovision
+lrwxr-xr-x    1 neilk  staff    30 Dec 29 14:29 key.pem -> ../.isign-distribution/key.pem
+```
+
+Then I can do a simple command line resign, like this:
+
+```
+isign \
+    -n ~/.isign-distribution-isignTestApp \
+    -o resigned/isignTestApp.ipa
+    isignTestApp.ipa
+```
+
+#### Test this
+
+You may now wish to test this by signing and uploading an app directly from XCode.
+
+Archive the project, choose to "Distribute" the app, and then choose "App Store Connect" and
+automatically manage signing.
+
+
+
+
+#### Create the IPA to be resigned
 
 At the top of the window select “Generic iOS Device” as your build target.
  
@@ -105,24 +183,31 @@ destination directory.
 
 In the terminal, cd to the directory you created, there should be an IPA there.
 
-Use `isign` to resign this IPA, for example
+
+
+#### Resign and submit to Apple
+
+When you submit to Apple, you need to keep bumping the bundle version. If you don't have some automatic
+way to do that, you can manually edit the file `Info.plist` or use `isign`'s `-i` option to edit the
+`CFBundleVersion` while resigning.
 
 ```bash
-$ isign -o resigned.ipa original.ipa
+isign \
+    -n ~/.isign-distribution-isignTestApp \
+    -i CFBundleVersion=2 \
+    -o basic-resigned-dist/isignTestApp.ipa \
+    basic-dev/isignTestApp.ipa
 ```
+
+Use `isign` to resign this IPA, for example
 
 Lastly (and this is what we've been building up to...) use `altool` to validate and submit:
 
 ```bash
-$ xcrun altool —validate-app --file ./resigned.ipa --username "$APP_STORE_USERNAME" --password "$APP_STORE_PASSWORD"
+$ xcrun altool --validate-app --file ./resigned.ipa --username "$APP_STORE_USERNAME" --password "$APP_STORE_PASSWORD"
 $ xcrun altool --upload-app --file ./resigned.ipa --username "$APP_STORE_USERNAME" --password "$APP_STORE_PASSWORD"
 
 ```
-
-
-## Semi-automated procedure
-
-TBD - add an action to XCode build pipeline
 
 
 
@@ -149,3 +234,17 @@ Many apps can be resigned with only the CFBundleIdentifier changed, but not all.
 apps that are part of an app group will need other properties edited.
 
 TBD: add docs for such properties here.
+
+
+## Troubleshooting
+
+### Errors with altool validate-app
+
+* Invalid Provisioning Profile: Maybe you're submitting an app resigned with a development key or development
+  provisioning profile. You need to resign the app with a distribution key and provisioning profile.
+
+* Entitlements: Note that isign uses the entitlements that are embedded in your provisioning profile. You have
+  two options to fix this: generate a new provisioning profile at Developer.apple.com, or, create your own
+  alternate entitlements file and use isign's command-line arguments to insert it.
+
+

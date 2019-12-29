@@ -32,4 +32,5 @@ find "Payload" -type d -name "*.app" | while IFS= read -r appdir; do
   echo "checking $appdir..."
   codesign --display --verbose=4 "$appdir";
   codesign --verify --verbose=4 --deep "$appdir";
+  codesign --display -vvvv --extract-certificates "$appdir";
 done;
