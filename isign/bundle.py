@@ -248,9 +248,8 @@ class App(Bundle):
 
         # In the typical case, we add entitlements from the pprof into the app's signature
         if not cms_signer.is_adhoc():
+	    self.provision(provisioning_profile)
             if alternate_entitlements_path is None:
-                # copy the provisioning profile in
-                self.provision(provisioning_profile)
                 entitlements = self.extract_entitlements(provisioning_profile)
             else:
                 log.info("signing with alternative entitlements: {}".format(alternate_entitlements_path))
