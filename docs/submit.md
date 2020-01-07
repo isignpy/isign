@@ -85,23 +85,29 @@ editor pane, navigating to the "General" tab.
 
 Your Bundle Identifier will look something like `com.example.yourAppName`.
 
+<<<<<<< HEAD
 Next, switch to a web browser. Log into [App Store Connect](https://appstoreconnect.apple.com/)
 
 Click "My Apps".
+=======
+!! you have to create separate identifiers AND provisioning profiles for watchkit apps
+!! how are we gonna tell isign to do this
+>>>>>>> wip
 
-Click the "+" symbol to add an app.
+bundle versions must all match!
+in this case, isign does the right thing already
 
-Select a "New App"
 
-In the next form, fill it out as you please, but make sure to select:
+#### Create an identifier
 
-* Platforms: iOS
+In a web browser, go to developer.apple.com > Certificates, Identifiers and Profiles.
 
 * Bundle ID: Choose options that get you a Bundle ID as above, `com.example.yourAppName`.
 
-  You may end up choosing a combination of wildcard and suffix, such as
-  * `*` + `com.example.yourAppName` = `com.example.yourAppName`
-  * `com.example.*` + `yourAppName` = `com.example.yourAppName`
+Click on Identifiers and use the '+' button to make a new one.
+
+Register an identifier with your Bundle Identifier as above. Select iOS. Give the app the necessary
+capabilities.
 
 #### Set up a distribution provisioning profile for this app.
 
@@ -109,11 +115,14 @@ Your mileage may vary here, but sometimes the App Store does not like to use wil
 application identifiers. So, you will need to create a provisioning profile that
 matches the application identifier above, exactly.
 
+!! maybe we need to use a new distribution cert as well??
+!! maybe we should use a wildcard after all?
+
 In a web browser, go to developer.apple.com > Certificates, Identifiers and Profiles.
 
-Register a new provisioning profile.
+Click on Provisioning Profiles and use the '+' button to make a new one.
 
-Select Distribution > App Store
+Select Distribution > App Store. Press Continue
 
 Select the Application ID you just created above.
 
@@ -148,6 +157,25 @@ isign \
     -o resigned/isignTestApp.ipa
     isignTestApp.ipa
 ```
+
+
+Next, switch to a web browser. Log into [App Store Connect](https://appstoreconnect.apple.com/)
+
+Click "My Apps".
+
+Click the "+" symbol to add an app.
+
+Select a "New App"
+
+In the next form, fill it out as you please, but make sure to select:
+
+* Platforms: iOS
+
+* Bundle ID: Choose options that get you a Bundle ID as above, `com.example.yourAppName`.
+
+  You may end up choosing a combination of wildcard and suffix, such as
+  * `*` + `com.example.yourAppName` = `com.example.yourAppName`
+  * `com.example.*` + `yourAppName` = `com.example.yourAppName`
 
 #### Test this
 
@@ -247,4 +275,7 @@ TBD: add docs for such properties here.
   two options to fix this: generate a new provisioning profile at Developer.apple.com, or, create your own
   alternate entitlements file and use isign's command-line arguments to insert it.
 
+* altool validates and submits your app correctly, but you get an email from Apple later complaining about:
+  * ITMS-90034: Missing or invalid signature: The bundle 'com.example.yourApp' at bundle path
+    'Payload/yourApp.app' is not signed using an Apple submission certificate. (WORKING ON IT!!!)
 

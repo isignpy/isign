@@ -10,27 +10,33 @@
 
 set -e
 
-
 ipa_file=$1
 ipa_basename=$(basename "$ipa_file")
 
 tempdir=$(mktemp -d)
-trap 'rm -r "$tempdir"' EXIT
+echo $tempdir
+#trap 'rm -r "$tempdir"' EXIT
+
+function verify_signables() {
+  local type="$1"
+  local extension="$2"
+  echo "Checking for $2..."
+  find "Payload" -type "$type" -name "*.$extension" | while IFS= read -r signable; do
+      echo "======"
+      echo "checking $signable..."
+      codesign --verify --verbose "$signable";
+      if [[ "$type" == 'd' ]]; then
+          codesign --display --verbose=4 --extract-certificates "$signable";
+          codesign --verify --verbose=4 --deep "$signable";
+      fi
+  done;
+}
 
 cp "$ipa_file" "$tempdir"
 cd "$tempdir"
 unzip -qq "$ipa_basename"
-find "Payload" -type d -name "*.app" | while IFS= read -r appdir; do
-  find "$appdir" -name "*.dylib" | while IFS= read -r dylib; do
-      echo "checking $dylib..."
-      codesign --verify --verbose "$dylib";
-  done;
-  find "$appdir" -type d -name "*.framework" | while IFS= read -r framework; do
-      echo "checking $framework..."
-      codesign --verify --verbose "$framework";
-  done;
-  echo "checking $appdir..."
-  codesign --display --verbose=4 "$appdir";
-  codesign --verify --verbose=4 --deep "$appdir";
-  codesign --display -vvvv --extract-certificates "$appdir";
-done;
+
+verify_signables d "app"
+verify_signables f "dylib"
+verify_signables f "framework"
+verify_signables d "appex"
