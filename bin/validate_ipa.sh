@@ -38,5 +38,5 @@ unzip -qq "$ipa_basename"
 
 verify_signables d "app"
 verify_signables f "dylib"
-verify_signables f "framework"
+verify_signables d "framework"
 verify_signables d "appex"
