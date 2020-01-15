@@ -158,7 +158,7 @@ class Bundle(object):
                     try:
                         framework = Framework(framework_path, self.native_platforms)
                         # log.debug("resigning: %s" % framework_path)
-                        framework.resign(deep, signer)
+                        framework.resign(deep, signer, provisioning_profile, alternate_entitlements_path)
                     except NotMatched:
                         # log.debug("not a framework: %s" % framework_path)
                         continue
