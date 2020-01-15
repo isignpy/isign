@@ -129,9 +129,10 @@ class CmsSigner(object):
         self.signer_cert_file = signer_cert_file
         self.apple_cert_file = apple_cert_file
 
-        self.team_id = team_id  # FIXME this seems backwards, we assign then reassign?
-        team_id = self.get_team_id()
-        if team_id is None:
+        self._team_id = team_id  # This may be None, in which case
+                                 # get_team_id() will try to pull it
+                                 # from the signer cert.
+        if self.get_team_id() is None:
             raise ImproperCredentials("Cert file does not contain Subject line"
                                       "with Apple Organizational Unit (OU)")
 
@@ -257,8 +258,8 @@ class CmsSigner(object):
 
     def get_team_id(self):
         """ Same as Apple Organizational Unit. Should be in the cert """
-        if self.team_id:
-            return self.team_id
+        if self._team_id:
+            return self._team_id
 
         team_id = None
         cmd = [
@@ -274,8 +275,8 @@ class CmsSigner(object):
             if match is not None:
                 team_id = match.group(1)
                 break
-        self.team_id = team_id
-        return team_id
+        self._team_id = team_id
+        return self._team_id
 
     def is_adhoc(self):
         return False
