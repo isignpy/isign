@@ -30,6 +30,6 @@ find "Payload" -type d -name "*.app" | while IFS= read -r appdir; do
       codesign --verify --verbose "$framework";
   done;
   echo "checking $appdir..."
-  codesign --verify --verbose --deep "$appdir";
-  codesign --display --verbose "$appdir";
+  codesign --display --verbose=4 "$appdir";
+  codesign --verify --verbose=4 --deep "$appdir";
 done;
