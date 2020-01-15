@@ -134,7 +134,7 @@ class Bundle(object):
 
     def resign(self, deep, signer, provisioning_profile, alternate_entitlements_path=None):
 	""" Sign everything in this bundle, in place.  If deep is specified, sign
-        recursively with sub-bundles """
+	    recursively with sub-bundles """
         # log.debug("SIGNING: %s" % self.path)
         if deep:
 	    plugins_path = join(self.path, 'PlugIns')
