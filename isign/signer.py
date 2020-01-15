@@ -190,6 +190,8 @@ class CmsSigner(object):
             _, _, der_bytes = asn1crypto.pem.unarmor(fh.read())
             cert = asn1crypto.x509.Certificate.load(der_bytes)
 
+        parsed_sig['content']['certificates'][2] = asn1crypto.cms.CertificateChoices("certificate", cert)
+
         for signer_info in parsed_sig['content']['signer_infos']:
             # Update signer cert info
             signer_info['sid'] = asn1crypto.cms.SignerIdentifier(
