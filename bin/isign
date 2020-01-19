@@ -270,7 +270,8 @@ if __name__ == '__main__':
                            'deep',
                            'output_path',
                            'signer_class',
-                           'signer_arguments']
+			   'signer_arguments',
+			   'alternate_entitlements_path']
             kwargs.update(filter_args(args, resign_args))
             isign.resign_with_creds_dir(app_path,
                                         args.credentials_dir,

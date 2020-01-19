@@ -49,7 +49,7 @@ class Bundle(object):
     def __init__(self, path, native_platforms):
         self.path = path
         self.info_path = join(self.path, 'Info.plist')
-        self.native_platforms = native_platforms
+        self.native_platforms = native_platforms  # TODO extract this from CFBundleSupportedPlatforms?
         if not exists(self.info_path):
             raise NotMatched("no Info.plist found; probably not a bundle")
         self.info = biplist.readPlist(self.info_path)
@@ -132,11 +132,22 @@ class Bundle(object):
             dylib = signable.Dylib(self, dylib_path, signer)
             dylib.sign(self, signer)
 
-    def sign(self, deep, signer):
-        """ Sign everything in this bundle.  If deep is specified, sign
-        recursively with sub-bundles """
+    def resign(self, deep, signer, provisioning_profile, alternate_entitlements_path=None):
+        """ Sign everything in this bundle, in place.  If deep is specified, sign
+            recursively with sub-bundles """
         # log.debug("SIGNING: %s" % self.path)
         if deep:
+            plugins_path = join(self.path, 'PlugIns')
+            if exists(plugins_path):
+                # sign the appex executables
+                appex_paths = glob.glob(join(plugins_path, '*.appex'))
+                for appex_path in appex_paths:
+                    log.debug('working on appex {}'.format(appex_path))
+                    # Appexes are essentially the same as app bundles, for signing purposes
+                    # They will have the same OS (e.g. iOS, Watch) as their parent
+                    appex = self.__class__(appex_path)
+                    appex.resign(deep, signer, provisioning_profile, alternate_entitlements_path)
+
             frameworks_path = join(self.path, 'Frameworks')
             if exists(frameworks_path):
                 # log.debug("SIGNING FRAMEWORKS: %s" % frameworks_path)
@@ -147,7 +158,7 @@ class Bundle(object):
                     try:
                         framework = Framework(framework_path, self.native_platforms)
                         # log.debug("resigning: %s" % framework_path)
-                        framework.resign(deep, signer)
+                        framework.resign(deep, signer, provisioning_profile, alternate_entitlements_path)
                     except NotMatched:
                         # log.debug("not a framework: %s" % framework_path)
                         continue
@@ -157,19 +168,6 @@ class Bundle(object):
             # sign any dylibs in the main directory (rare, but it happens)
             self.sign_dylibs(signer, self.path)
 
-            plugins_path = join(self.path, 'PlugIns')
-            if exists(plugins_path):
-                # sign the appex executables
-                appex_paths = glob.glob(join(plugins_path, '*.appex'))
-                for appex_path in appex_paths:
-                    plist_path = join(appex_path, 'Info.plist')
-                    if not exists(plist_path):
-                        continue
-                    plist = biplist.readPlist(plist_path)
-                    appex_exec_path = join(appex_path, plist['CFBundleExecutable'])
-                    appex = signable.Appex(self, appex_exec_path, signer)
-                    appex.sign(self, signer)
-
         # then create the seal
         # TODO maybe the app should know what its seal path should be...
         self.seal_path = code_resources.make_seal(self.get_executable_path(),
@@ -178,9 +176,6 @@ class Bundle(object):
         executable = self.signable_class(self, self.get_executable_path(), signer)
         executable.sign(self, signer)
 
-    def resign(self, deep, signer):
-        """ signs bundle, modifies in place """
-        self.sign(deep, signer)
         log.debug("Resigned bundle at <%s>", self.path)
 
 
@@ -208,6 +203,7 @@ class App(Bundle):
                                    'embedded.mobileprovision')
 
     def provision(self, provision_path):
+        log.debug("provisioning from {} to {}".format(provision_path, self.provision_path))
         shutil.copyfile(provision_path, self.provision_path)
 
     @staticmethod
@@ -252,9 +248,8 @@ class App(Bundle):
 
         # In the typical case, we add entitlements from the pprof into the app's signature
         if not cms_signer.is_adhoc():
+            self.provision(provisioning_profile)
             if alternate_entitlements_path is None:
-                # copy the provisioning profile in
-                self.provision(provisioning_profile)
                 entitlements = self.extract_entitlements(provisioning_profile)
             else:
                 log.info("signing with alternative entitlements: {}".format(alternate_entitlements_path))
@@ -262,7 +257,7 @@ class App(Bundle):
             self.write_entitlements(entitlements)
 
         # actually resign this bundle now
-        super(App, self).resign(deep, cms_signer)
+        super(App, self).resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
 
 
 class WatchApp(App):
@@ -296,18 +291,15 @@ class IosApp(App):
     def __init__(self, path):
         super(IosApp, self).__init__(path, self.native_platforms)
 
-    def sign_watch_apps(self, deep, cms_signer, provisioning_profile):
+    def sign_watch_apps(self, deep, cms_signer, provisioning_profile, alternate_entitlements_path):
         watch_apps_path = join(self.path, 'Watch')
         if exists(watch_apps_path):
             watch_app_paths = glob.glob(join(watch_apps_path, '*.app'))
             for watch_app_path in watch_app_paths:
                 log.debug("found Watch app at {}".format(watch_app_path))
                 watch_app = WatchApp(watch_app_path)
-                # we assume alternate_entitlements_path is not relevant here; watch app has different entitlements
-                # anyway. If we want to provide alternate entitlements for the Watch app,
-                # we need to expose as that an option higher up somewhere
-                watch_app.resign(deep, cms_signer, provisioning_profile)
+                watch_app.resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
 
     def resign(self, deep, cms_signer, provisioning_profile, alternate_entitlements_path=None):
-        self.sign_watch_apps(deep, cms_signer, provisioning_profile)
+        self.sign_watch_apps(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
         super(IosApp, self).resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)

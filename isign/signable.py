@@ -275,13 +275,6 @@ class Dylib(Signable):
                     RequirementsSlot]
 
 
-class Appex(Signable):
-    """ An app extension  """
-    slot_classes = [EntitlementsSlot,
-                    RequirementsSlot,
-                    InfoSlot]
-
-
 class Framework(Signable):
     """ The main executable of a Framework, which is a library of sorts
         but is bundled with both files and code """
