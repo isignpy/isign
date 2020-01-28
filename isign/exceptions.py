@@ -31,3 +31,8 @@ class ImproperCredentials(Exception):
 class OpenSslFailure(Exception):
     """ something is wrong with openssl output """
     pass
+
+
+class BadIdentifier(Exception):
+    """ an application-identifier or CFBundleIdentifier is wrong """
+    pass

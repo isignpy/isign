@@ -114,17 +114,12 @@ def parse_args():
     )
     parser.add_argument(
         '-e', '--entitlements',
-        dest='alternate_entitlements_path',
+        dest='entitlements_paths',
+        action='append',
         required=False,
-        metavar='<alternate entitlements path>',
+        metavar='<path to entitlements plist>',
         type=absolute_path_argument,
-        help='Sign with these entitlements, rather than ones extracted from provisioning profile'
-    )
-    parser.add_argument(
-        '--force',
-        required=False,
-        action='store_true',
-        help='This option is ignored.  It exists only for compatibility with Apple codesign.'
+        help='Add an entitlements plist. It will be used for bundles that match the application identifier.'
     )
     parser.add_argument(
         '--sign',
@@ -270,8 +265,8 @@ if __name__ == '__main__':
                            'deep',
                            'output_path',
                            'signer_class',
-			   'signer_arguments',
-			   'alternate_entitlements_path']
+			               'signer_arguments',
+			               'entitlements_paths']
             kwargs.update(filter_args(args, resign_args))
             isign.resign_with_creds_dir(app_path,
                                         args.credentials_dir,
@@ -287,7 +282,7 @@ if __name__ == '__main__':
                            'apple_cert',
                            'provisioning_profile',
                            'output_path',
-                           'alternate_entitlements_path',
+                           'entitlements_paths',
                            'signer_class',
                            'signer_arguments']
             kwargs.update(filter_args(args, resign_args))

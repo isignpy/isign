@@ -4,6 +4,8 @@ import hashlib
 import logging
 import macho_cs
 
+from bundle import App
+
 import utils
 
 log = logging.getLogger(__name__)
@@ -298,11 +300,10 @@ class Codesig(object):
         """ Do the actual signing. Create the structure and then update all the
             byte offsets """
 
-        # TODO - the way entitlements are handled is a code smell
-        # 1 - We're doing a hasattr to detect whether it's a top-level app. isinstance(App, bundle) ?
-        # 2 - unlike the seal_path and info_path, the entitlements_path is not functional. Apps are verified
-        #     based on the entitlements encoded into the code signature and slots and MAYBE the pprof.
-        # Possible refactor - make entitlements data part of CmsSigner rather than Bundle?
+        # TODO - the way entitlements are handled is a bit of a code smell
+        # We're doing a hasattr on entitlements_path to detect whether it's a top-level app.
+        #      maybe - isinstance(App, bundle) ?
+        # Also we don't actually need a path to entitlements, just the entitlements data as bytes.
         if hasattr(bundle, 'entitlements_path') and bundle.entitlements_path is not None:
             self.set_entitlements(bundle.entitlements_path)
         self.set_requirements(signer)

@@ -111,12 +111,13 @@ capabilities.
 
 #### Set up a distribution provisioning profile for this app.
 
-Your mileage may vary here, but sometimes the App Store does not like to use wildcard
-application identifiers. So, you will need to create a provisioning profile that
-matches the application identifier above, exactly.
+Caveat - the following advice may be incorrect; at present all we have is folklore.
 
-!! maybe we need to use a new distribution cert as well??
-!! maybe we should use a wildcard after all?
+Your mileage may vary here, but sometimes the App Store does not like to use wildcard app identifiers,
+e.g. `YOURTEAMID.net.neilk.*`
+
+So, you will need to create a provisioning profile that
+matches the application identifier above, exactly.
 
 In a web browser, go to developer.apple.com > Certificates, Identifiers and Profiles.
 
@@ -279,3 +280,95 @@ TBD: add docs for such properties here.
   * ITMS-90034: Missing or invalid signature: The bundle 'com.example.yourApp' at bundle path
     'Payload/yourApp.app' is not signed using an Apple submission certificate. (WORKING ON IT!!!)
 
+
+
+
+### Notes on WatchKit
+
+1) invalid entitlements
+
+"Error Domain=ITunesConnectionOperationErrorDomain Code=1091
+ \"Invalid Code Signing Entitlements. 
+ Your application bundle's signature contains code signing entitlements that are not supported on iOS. 
+ Specifically, value 'L37S4Z6BE9.net.neilk.isignTestWatchApp'  for key 'application-identifier' in 
+ 'Payload/isignTestWatchApp.app/Watch/isignTestWatchApp WatchKit App.app/isignTestWatchApp WatchKit App' 
+ is not supported. This value should be a string starting with your TEAMID, 
+ followed by a dot '.', followed by the bundle identifier.\" 
+ UserInfo={NSLocalizedRecoverySuggestion=Invalid Code Signing Entitlements. 
+ 
+"Error Domain=ITunesConnectionOperationErrorDomain Code=1091 
+\"Invalid Code Signing Entitlements. 
+Your application bundle's signature contains code signing entitlements that are not supported on iOS. 
+Specifically, value 'L37S4Z6BE9.net.neilk.isignTestWatchApp' for key 'application-identifier' in 
+'Payload/isignTestWatchApp.app/Watch/isignTestWatchApp WatchKit App.app/PlugIns/isignTestWatchApp WatchKit Extension.appex/isignTestWatchApp WatchKit Extension' 
+is not supported. This value should be a string starting with your TEAMID, 
+followed by a dot '.', followed by the bundle identifier.\" 
+UserInfo={NSLocalizedRecoverySuggestion=Invalid Code Signing Entitlements. 
+
+
+Note: looking at opendiff of the asn1parsed provisioning profiles
+1)
+?? for watchkit app it looks like XCode selected "SimulatedCustomerApp" which has wildcard certs
+will this work for submitting to the app store?
+passed validation and submission and App Store.
+
+xcode using auto-management, in provisioning profile...
+<key>DeveloperCertificates</key>
+	<array>
+		<data>MIIFpzCCBI+gAwIBAgIIbKb6q5aydEcwDQYJKoZIhvcNAQELBQAwgZYxCzAJBgNVBAYTAlVTMRMwEQYDVQQKDApBcHBsZSBJbmMuMSwwKgYDVQQLDCNBcHBsZSBXb3JsZHdpZGUgRGV2ZWxvcGVyIFJlbGF0aW9uczFEMEIGA1UEAww7QXBwbGUgV29ybGR3aWRlIERldmVsb3BlciBSZWxhdGlvbnMgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTkwODEyMDExNTQxWhcNMjAwODExMDExNTQxWjCBmjEaMBgGCgmSJomT8ixkAQEMCkwzN1M0WjZCRTkxPTA7BgNVBAMMNGlQaG9uZSBEaXN0cmlidXRpb246IE5laWwgS2FuZGFsZ2FvbmthciAoTDM3UzRaNkJFOSkxEzARBgNVBAsMCkwzN1M0WjZCRTkxGzAZBgNVBAoMEk5laWwgS2FuZGFsZ2FvbmthcjELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCegTSJUQqD8NyGPLwadZNXQXe5nsey+7qQYOU/v1Wsn3g+MlNulhFUtOfuBCAiwbHmN16qUkws2AtCRB7+8asXuhp/edoRdKOLOrfJTjV8Xhmch3lCuuszk7FVlDx/+KHChv/j8Ozjp/DxXgsaGeitiYsGPEZh1DNVUxON7/k1rJy0vZcjeJpHkfCHM1L0QXgbzj7N5f5bn8dJ6Mw6RncK05q092l/LyHK4gkWTFF3/jCASFJbTqwFaWkxTx6lGdZ7xdD5Jp/s1IPik2Mk9Tel3L1c2nwfWX3z4EiW9eM+Akp78KEHXLUt82c7Fd2E2A+lw2GwH+t6cU/4W1PqLCUlAgMBAAGjggHxMIIB7TAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFIgnFwmpthhgi+zruvZHWcVSVKO3MD8GCCsGAQUFBwEBBDMwMTAvBggrBgEFBQcwAYYjaHR0cDovL29jc3AuYXBwbGUuY29tL29jc3AwMy13d2RyMTEwggEdBgNVHSAEggEUMIIBEDCCAQwGCSqGSIb3Y2QFATCB/jCBwwYIKwYBBQUHAgIwgbYMgbNSZWxpYW5jZSBvbiB0aGlzIGNlcnRpZmljYXRlIGJ5IGFueSBwYXJ0eSBhc3N1bWVzIGFjY2VwdGFuY2Ugb2YgdGhlIHRoZW4gYXBwbGljYWJsZSBzdGFuZGFyZCB0ZXJtcyBhbmQgY29uZGl0aW9ucyBvZiB1c2UsIGNlcnRpZmljYXRlIHBvbGljeSBhbmQgY2VydGlmaWNhdGlvbiBwcmFjdGljZSBzdGF0ZW1lbnRzLjA2BggrBgEFBQcCARYqaHR0cDovL3d3dy5hcHBsZS5jb20vY2VydGlmaWNhdGVhdXRob3JpdHkvMBYGA1UdJQEB/wQMMAoGCCsGAQUFBwMDMB0GA1UdDgQWBBQfEBI9Kiq+odNZ+xBgHVTpyggwLjAOBgNVHQ8BAf8EBAMCB4AwEwYKKoZIhvdjZAYBBAEB/wQCBQAwDQYJKoZIhvcNAQELBQADggEBAEEJJXRXn61QdzIzDVf83CKrTKUfEXN/ixHzkQ29fQYgwuVqNYg+r2ykYlQx+3Txuu0r4F1PF+qQfMBq3D8Sq14N43amV/NvIgd4BFJfvTQrGYrjnMBk7ELDpU/J66YwnDt4wTKexL8eLD4jfPNSYpyCf+kryTRfoE5hXKpEn2jrgNbUSPGyauvv6w1GmgNgYmxB+fWF6Xqsy5aWKZ0wCpNd262RGDh3dPEtqtseSwYrzxlqiZRTXR2htU6prIr3sfoC2uOXtHiV1yN1e5XfRk4iSWybu/ZAJHncignhMCDZS8d225SCBUppfXktH7McuJH6bDaiy+7Y6cm8D5JRVUw=</data>
+		<data>MIIFuzCCBKOgAwIBAgIIGUbgCb5Lq+8wDQYJKoZIhvcNAQELBQAwgZYxCzAJBgNVBAYTAlVTMRMwEQYDVQQKDApBcHBsZSBJbmMuMSwwKgYDVQQLDCNBcHBsZSBXb3JsZHdpZGUgRGV2ZWxvcGVyIFJlbGF0aW9uczFEMEIGA1UEAww7QXBwbGUgV29ybGR3aWRlIERldmVsb3BlciBSZWxhdGlvbnMgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTkwOTI5MTkzMzIzWhcNMjAwOTI4MTkzMzIzWjCBmTEaMBgGCgmSJomT8ixkAQEMCkwzN1M0WjZCRTkxPDA6BgNVBAMMM0FwcGxlIERpc3RyaWJ1dGlvbjogTmVpbCBLYW5kYWxnYW9ua2FyIChMMzdTNFo2QkU5KTETMBEGA1UECwwKTDM3UzRaNkJFOTEbMBkGA1UECgwSTmVpbCBLYW5kYWxnYW9ua2FyMQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOF8e0GnMnPaJCRzg9c6MOjm99ikbHScCIJBcoyXWkH3PkiRrDy106/gjeLDOtG6psbjKl++TGek+7pP85RKwbHn9vCfu3pqcHe+HZ/LNL2puft4VMObuTHvROkpOSMpoxLZd6iyy+9hADSvhZ+8jaAXe+t3Fz3xicbb+IfA729B32Ly6INDsAfrXHXWPM6uVnpvBd66QGuMFUom+u3b0z7+6Ze5zrkqwsDD0lbokACXyP/OWUoAfpzX5ji8QxxEWfzy0UO5VuNysg7mL/ijK+miDo5XzNglD/xSCo2smF7M7OlO4grMv867jmB9H9r60HRneaWqW/m1gd1nXdJT9G0CAwEAAaOCAgYwggICMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUiCcXCam2GGCL7Ou69kdZxVJUo7cwPwYIKwYBBQUHAQEEMzAxMC8GCCsGAQUFBzABhiNodHRwOi8vb2NzcC5hcHBsZS5jb20vb2NzcDAzLXd3ZHIyMDCCAR0GA1UdIASCARQwggEQMIIBDAYJKoZIhvdjZAUBMIH+MIHDBggrBgEFBQcCAjCBtgyBs1JlbGlhbmNlIG9uIHRoaXMgY2VydGlmaWNhdGUgYnkgYW55IHBhcnR5IGFzc3VtZXMgYWNjZXB0YW5jZSBvZiB0aGUgdGhlbiBhcHBsaWNhYmxlIHN0YW5kYXJkIHRlcm1zIGFuZCBjb25kaXRpb25zIG9mIHVzZSwgY2VydGlmaWNhdGUgcG9saWN5IGFuZCBjZXJ0aWZpY2F0aW9uIHByYWN0aWNlIHN0YXRlbWVudHMuMDYGCCsGAQUFBwIBFipodHRwOi8vd3d3LmFwcGxlLmNvbS9jZXJ0aWZpY2F0ZWF1dGhvcml0eS8wFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwMwHQYDVR0OBBYEFID3YsUR7Hv85KrH+OwrG+tCfjrGMA4GA1UdDwEB/wQEAwIHgDATBgoqhkiG92NkBgEHAQH/BAIFADATBgoqhkiG92NkBgEEAQH/BAIFADANBgkqhkiG9w0BAQsFAAOCAQEAu9o1ms4/A9k5uqhbZRHQoqWXY3n+IbbNKKwUe20mhOvw1zdEGG4YhDmcMR0Mz+e+uRPBpc59SXVZMjcD9tiBQsJS4KHXBpaZVx5B7ERSJQNhIH43hvZnZFddFQyN4hA/9c0TTC92ejIdoGDafEA79fYaYPedGxd6Fkp+LEa9uZvnhPN84xGOO1TV+ozKq1Nz1LJaxYLxu57Ux+fNdL/RJMWw0ZB5wXDdYZNW1qMeIZoNXt/Nz6pA9qhiS0dUs46B2mxms1YdQLsGhqE6PZQEoRJChxZRczoK3y5KqmWkElvQFWVM34bNlmAPOZ9I7SaIPWA6EKToyTI9EsRBKAlYKA==</data>
+	</array>
+	
+me using a specifically generated provisioning profile...
+
+	<key>DeveloperCertificates</key>
+	<array>
+		<data>MIIFuzCCBKOgAwIBAgIIGUbgCb5Lq+8wDQYJKoZIhvcNAQELBQAwgZYxCzAJBgNVBAYTAlVTMRMwEQYDVQQKDApBcHBsZSBJbmMuMSwwKgYDVQQLDCNBcHBsZSBXb3JsZHdpZGUgRGV2ZWxvcGVyIFJlbGF0aW9uczFEMEIGA1UEAww7QXBwbGUgV29ybGR3aWRlIERldmVsb3BlciBSZWxhdGlvbnMgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTkwOTI5MTkzMzIzWhcNMjAwOTI4MTkzMzIzWjCBmTEaMBgGCgmSJomT8ixkAQEMCkwzN1M0WjZCRTkxPDA6BgNVBAMMM0FwcGxlIERpc3RyaWJ1dGlvbjogTmVpbCBLYW5kYWxnYW9ua2FyIChMMzdTNFo2QkU5KTETMBEGA1UECwwKTDM3UzRaNkJFOTEbMBkGA1UECgwSTmVpbCBLYW5kYWxnYW9ua2FyMQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOF8e0GnMnPaJCRzg9c6MOjm99ikbHScCIJBcoyXWkH3PkiRrDy106/gjeLDOtG6psbjKl++TGek+7pP85RKwbHn9vCfu3pqcHe+HZ/LNL2puft4VMObuTHvROkpOSMpoxLZd6iyy+9hADSvhZ+8jaAXe+t3Fz3xicbb+IfA729B32Ly6INDsAfrXHXWPM6uVnpvBd66QGuMFUom+u3b0z7+6Ze5zrkqwsDD0lbokACXyP/OWUoAfpzX5ji8QxxEWfzy0UO5VuNysg7mL/ijK+miDo5XzNglD/xSCo2smF7M7OlO4grMv867jmB9H9r60HRneaWqW/m1gd1nXdJT9G0CAwEAAaOCAgYwggICMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUiCcXCam2GGCL7Ou69kdZxVJUo7cwPwYIKwYBBQUHAQEEMzAxMC8GCCsGAQUFBzABhiNodHRwOi8vb2NzcC5hcHBsZS5jb20vb2NzcDAzLXd3ZHIyMDCCAR0GA1UdIASCARQwggEQMIIBDAYJKoZIhvdjZAUBMIH+MIHDBggrBgEFBQcCAjCBtgyBs1JlbGlhbmNlIG9uIHRoaXMgY2VydGlmaWNhdGUgYnkgYW55IHBhcnR5IGFzc3VtZXMgYWNjZXB0YW5jZSBvZiB0aGUgdGhlbiBhcHBsaWNhYmxlIHN0YW5kYXJkIHRlcm1zIGFuZCBjb25kaXRpb25zIG9mIHVzZSwgY2VydGlmaWNhdGUgcG9saWN5IGFuZCBjZXJ0aWZpY2F0aW9uIHByYWN0aWNlIHN0YXRlbWVudHMuMDYGCCsGAQUFBwIBFipodHRwOi8vd3d3LmFwcGxlLmNvbS9jZXJ0aWZpY2F0ZWF1dGhvcml0eS8wFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwMwHQYDVR0OBBYEFID3YsUR7Hv85KrH+OwrG+tCfjrGMA4GA1UdDwEB/wQEAwIHgDATBgoqhkiG92NkBgEHAQH/BAIFADATBgoqhkiG92NkBgEEAQH/BAIFADANBgkqhkiG9w0BAQsFAAOCAQEAu9o1ms4/A9k5uqhbZRHQoqWXY3n+IbbNKKwUe20mhOvw1zdEGG4YhDmcMR0Mz+e+uRPBpc59SXVZMjcD9tiBQsJS4KHXBpaZVx5B7ERSJQNhIH43hvZnZFddFQyN4hA/9c0TTC92ejIdoGDafEA79fYaYPedGxd6Fkp+LEa9uZvnhPN84xGOO1TV+ozKq1Nz1LJaxYLxu57Ux+fNdL/RJMWw0ZB5wXDdYZNW1qMeIZoNXt/Nz6pA9qhiS0dUs46B2mxms1YdQLsGhqE6PZQEoRJChxZRczoK3y5KqmWkElvQFWVM34bNlmAPOZ9I7SaIPWA6EKToyTI9EsRBKAlYKA==</data>
+	</array>
+	
+?? is this what is selected for other apps??
+
+The benefit of using a wildcard cert is that we wouldn't have to worry about creating a cert for each
+individual app
+On the other hand, what is the normal practice for Square??
+...We could check in the actual Square app that we have
+Actual Square Apps use different entitlements for app, watch-appex, watch-app.
+And they use fully qualified application identifiers, keychain groups, etc.
+(Square also leaves rando entitlement template files lying around in their app lol)
+
+So here's the deal
+Why are we even rewriting entitlements at all??? is that necessary?
+Why can't we extract entitlements from every kind of app, then do whatever is the needful?
+when resigning from one domain to another I guess we may have to exchange some things
+what does isign even do with entitlements
+
+what we need: entitlements to create the hash of entitlements in the slot
+(sometimes we are rewriting the entitlements)
+so what happens is that we special-cased the "top level" app
+we got entitlements from that one, then mindlessly rewrote them
+what we need to do instead
+- get entitlements from every bundle (except frameworks, which don't have them)
+- process them similarly
+- eliminate "alternate entitlements path" and maybe use this format in the config directory
+    entitlements/app-identifier1
+    entitlements/app-identifier2
+
+
+Rethink
+- for resigning, we might want to erase entitlements, app id, and replace it with what's in the pprof
+- this would imply that we should have different pprofs for each bundle of app, appex, watch app
+- but, it seems that the pprof is the same??? so does the pprof in use by Square contain only entitlements for top app?
+
+
+
+
+
+2) the provisioning profile properties seem to include two different certs
+
+
+
+
+
+2) The CFBundleVersion needs to be bumped in both IosApp and WatchApp
+    
+    "Error Domain=ITunesConnectionOperationErrorDomain Code=1091 \"CFBundleVersion Mismatch. The CFBundleVersion value '3' of watch application 'isignTestWatchApp.app/Watch/isignTestWatchApp WatchKit App.app' does not match the CFBundleVersion value '100' of its containing iOS application 'isignTestWatchApp.app'.\" UserInfo={NSLocalizedRecoverySuggestion=CFBundleVersion Mismatch. The CFBundleVersion value '3' of watch application 'isignTestWatchApp.app/Watch/isignTestWatchApp WatchKit App.app' does not match the CFBundleVersion value '100' of its containing iOS application 'isignTestWatchApp.app'., NSLocalizedDescription=CFBundleVersion Mismatch. The CFBundleVersion value '3' of watch application 'isignTestWatchApp.app/Watch/isignTestWatchApp WatchKit App.app' does not match the CFBundleVersion value '100' of its containing iOS application 'isignTestWatchApp.app'., NSLocalizedFailureReason=App Store operation failed.}"
