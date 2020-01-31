@@ -4,12 +4,7 @@ import hashlib
 import logging
 import macho_cs
 
-from bundle import App
-
-import utils
-
 log = logging.getLogger(__name__)
-
 
 # See the documentation for an explanation of how
 # CodeDirectory slots work.
@@ -304,8 +299,8 @@ class Codesig(object):
         # We're doing a hasattr on entitlements_path to detect whether it's a top-level app.
         #      maybe - isinstance(App, bundle) ?
         # Also we don't actually need a path to entitlements, just the entitlements data as bytes.
-        if hasattr(bundle, 'entitlements_path') and bundle.entitlements_path is not None:
-            self.set_entitlements(bundle.entitlements_path)
+        if hasattr(bundle, 'entitlements') and bundle.entitlements is not None:
+            self.set_entitlements(bundle.entitlements)
         self.set_requirements(signer)
         # See docs/codedirectory.rst for some notes on optional hashes
         self.set_codedirectory(bundle.seal_path, bundle.info_path, signer)

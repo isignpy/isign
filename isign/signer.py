@@ -13,6 +13,7 @@ from OpenSSL import crypto
 import os
 import os.path
 import re
+import sys
 import asn1crypto.cms
 import asn1crypto.core
 import asn1crypto.pem
@@ -199,7 +200,7 @@ class CmsSigner(object):
 
     def _log_parsed_asn1(self, data):
         cmd = ['asn1parse', '-inform', 'DER' '-i']
-        parsed_asn1 = openssl_command(cmd)
+        parsed_asn1 = OpenSslShell.command(cmd)
         log.debug(parsed_asn1)
 
     def get_team_id(self):
@@ -214,7 +215,7 @@ class CmsSigner(object):
             '-text',
             '-noout'
         ]
-        certificate_info = openssl_command(cmd)
+        certificate_info = OpenSslShell.command(cmd)
         subject_with_ou_match = re.compile(r'\s+Subject:.*OU\s?=\s?(\w+)')
         for line in certificate_info.splitlines():
             match = subject_with_ou_match.match(line)

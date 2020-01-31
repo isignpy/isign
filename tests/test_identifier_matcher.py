@@ -1,5 +1,5 @@
 import unittest
-from isign.provisioner import IdentifierMatcher
+from isign.identifier_matcher import IdentifierMatcher
 from isign.exceptions import BadIdentifier
 
 
@@ -52,7 +52,6 @@ class TestIdentifierMatcher(unittest.TestCase):
             'ABC.*',
             IdentifierMatcher.get_best_pattern('ABC.def.ghi', ['ABC.*', 'ABC.def.jkl', 'XYZ'])
         )
-
 
 
 if __name__ == '__main__':

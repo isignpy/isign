@@ -31,11 +31,12 @@ def parse_args():
                     'how to obtain properly formatted credentials.')
     parser.add_argument(
         '-p', '--provisioning-profile',
-        dest='provisioning_profile',
+        dest='provisioning_profiles',
         required=False,
         metavar='<your.mobileprovision path>',
+        action='append',
         type=absolute_path_argument,
-        help='Path to provisioning profile'
+        help='Path to provisioning profile. Repeat for multiple'
     )
     parser.add_argument(
         '-a', '--apple-cert',
@@ -71,7 +72,8 @@ def parse_args():
         help='Equivalent to '
              '-k <directory>/key.pem '
              '-c <directory>/certificate.pem '
-             '-p <directory>/isign.mobileprovision'
+             '-p <directory>/*.mobileprovision '
+             '-e <directory>/*.entitlements'
     )
     parser.add_argument(
         '-o', '--output',
@@ -265,8 +267,8 @@ if __name__ == '__main__':
                            'deep',
                            'output_path',
                            'signer_class',
-			               'signer_arguments',
-			               'entitlements_paths']
+                           'signer_arguments',
+                           'entitlements_paths']
             kwargs.update(filter_args(args, resign_args))
             isign.resign_with_creds_dir(app_path,
                                         args.credentials_dir,

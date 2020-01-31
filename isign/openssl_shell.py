@@ -62,6 +62,7 @@ class OpenSslShell(object):
         minimum_tuple = cls.version_to_tuple(minimum)
         return version_tuple >= minimum_tuple
 
+    @classmethod
     def version_to_tuple(cls, s):
         """ OpenSSL uses its own versioning scheme, so we convert to tuple,
             for easier comparison """

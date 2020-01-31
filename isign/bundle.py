@@ -202,26 +202,30 @@ class App(Bundle):
     signable_class = signable.Executable
 
     def __init__(self, path, native_platforms):
+        self.entitlements = None    # this is a bit ugly, but we have to communicate this down to Codesig
         super(App, self).__init__(path, native_platforms)
 
-    def provision(self, provisioner):
-        provisioning_profile_path = provisioner.get_provisioning_profile(self.get_bundle_id())
+    def provision(self, team_id, provisioner):
+        identifier = '.'.join([team_id, self.get_bundle_id()])
+        provisioning_profile_path = provisioner.get_provisioning_profile(identifier)
         target_path = join(self.path, 'embedded.mobileprovision')
         log.debug("provisioning from {} to {}".format(provisioning_profile_path, target_path))
         shutil.copyfile(provisioning_profile_path, target_path)
 
-    def entitle(self, provisioner):
-        self.entitlements_path = provisioner.get_entitlements_path(self.get_bundle_id())
+    def entitle(self, team_id, provisioner):
+        identifier = '.'.join([team_id, self.get_bundle_id()])
+        self.entitlements = provisioner.get_entitlements(identifier)
 
     def resign(self, deep, cms_signer, provisioner):
         """ signs app in place """
         # In the typical case, we add entitlements from the pprof into the app's signature
         if not cms_signer.is_adhoc():
-            self.provision(provisioner)
-            self.entitle(provisioner)
+            team_id = cms_signer.get_team_id()
+            self.provision(team_id, provisioner)
+            self.entitle(team_id, provisioner)
 
         # actually resign this bundle now
-        super(App, self).resign(deep, cms_signer)
+        super(App, self).resign(deep, cms_signer, provisioner)
 
 
 class WatchApp(App):

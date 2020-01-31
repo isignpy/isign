@@ -14,8 +14,7 @@ PACKAGE_ROOT = dirname(realpath(__file__))
 DEFAULT_APPLE_CERT_PATH = join(PACKAGE_ROOT, 'apple_credentials', 'applecerts.pem')
 DEFAULT_CREDENTIAL_FILE_NAMES = {
     'certificate': 'certificate.pem',
-    'key': 'key.pem',
-    'provisioning_profile': 'isign.mobileprovision'
+    'key': 'key.pem'
 }
 
 
@@ -41,6 +40,7 @@ HOME_DIR = expanduser("~")
 DEFAULT_CREDENTIAL_PATHS = get_credential_paths(
     join(HOME_DIR, '.isign')
 )
+DEFAULT_PROVISIONING_PROFILE_PATH = join(HOME_DIR, '.isign', 'isign.mobileprovision')
 
 
 def get_entitlements_paths(directory):
@@ -48,12 +48,18 @@ def get_entitlements_paths(directory):
     return glob.glob(join(directory, "*.entitlements"))
 
 
+def get_provisioning_profiles(directory):
+    """ Given a directory, return list of entitlements files """
+    return glob.glob(join(directory, "*.mobileprovision"))
+
+
 def resign_with_creds_dir(input_path,
                           credentials_directory,
                           **kwargs):
     """ Do isign.resign(), but with credential files from this directory """
     kwargs.update(get_credential_paths(credentials_directory))
-    kwargs.update(get_entitlements_paths(credentials_directory))
+    kwargs.update({"provisioning_profiles": get_provisioning_profiles(credentials_directory)})
+    kwargs.update({"entitlements_paths": get_entitlements_paths(credentials_directory)})
     return resign(input_path, **kwargs)
 
 
@@ -83,13 +89,13 @@ def resign(input_path,
                            signer_cert_file=certificate)
 
     if provisioning_profiles is None:
-        provisioning_profiles = [DEFAULT_CREDENTIAL_PATHS['provisioning_profile']]
+        provisioning_profiles = [DEFAULT_PROVISIONING_PROFILE_PATH]
 
     if entitlements_paths is None:
         entitlements_paths = []
 
     provisioner = Provisioner(provisioning_profiles, entitlements_paths)
-    # TODO sanity check that all provisioning profiles match certificate?
+    # sanity check that all provisioning profiles match certificate?
 
     try:
         return archive.resign(input_path,
@@ -102,7 +108,6 @@ def resign(input_path,
         # re-raise the exception without exposing internal
         # details of how it happened
         raise NotSignable(e)
-
 
 
 def view(input_path):
