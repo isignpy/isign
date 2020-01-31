@@ -4,9 +4,9 @@
 from distutils import spawn
 from exceptions import OpenSslFailure
 import logging
+import os
 import re
 import subprocess
-
 
 
 
@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 class OpenSslShell(object):
     @classmethod
-    def command(args, data=None, expect_err=False):
+    def command(cls, args, data=None, expect_err=False):
         """ Given array of args, and optionally data to write,
             return results of openssl command.
             Some commands always write something to stderr, so allow

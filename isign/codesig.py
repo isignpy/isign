@@ -103,7 +103,7 @@ class Codesig(object):
         blob = self.get_blob(magic)
         return macho_cs.Blob_.build(blob)
 
-    def set_entitlements(self, entitlements_path):
+    def set_entitlements(self, entitlements_bytes):
         # log.debug("entitlements:")
         try:
             entitlements = self.get_blob('CSMAGIC_ENTITLEMENT')
@@ -116,8 +116,8 @@ class Codesig(object):
             # entitlements_data = macho_cs.Blob_.build(entitlements)
             # log.debug(hashlib.sha1(entitlements_data).hexdigest())
 
-            entitlements.bytes = open(entitlements_path, "rb").read()
-            entitlements.length = len(entitlements.bytes) + 8
+            entitlements.bytes = entitlements_bytes
+            entitlements.length = len(entitlements_bytes) + 8
             # entitlements_data = macho_cs.Blob_.build(entitlements)
             # log.debug(hashlib.sha1(entitlements_data).hexdigest())
 
