@@ -1,4 +1,5 @@
 from exceptions import BadIdentifier
+import itertools
 
 
 class IdentifierMatcher(object):
@@ -39,7 +40,6 @@ class IdentifierMatcher(object):
             return an natural number score of how well the pattern matches the id.
             0 means no match at all
         """
-        score = 0
         if identifier is None or identifier is '':
             raise BadIdentifier("id doesn't look right: {}".format(identifier))
         if pattern is None or pattern is '':
@@ -55,18 +55,19 @@ class IdentifierMatcher(object):
             pass
 
         # to be a match, there must be equal or fewer pattern parts. Neither 'foo.bar' nor 'foo.*' can match 'foo'
-        i = 0
-        p = 0
-        while i < len(identifier_parts) or p < len(pattern_parts):
-            if p < len(pattern_parts) and i < len(identifier_parts):
-                if identifier_parts[i] == pattern_parts[p]:
-                    i = i + 1
-                    p = p + 1
-                    score = score + 1
-                    continue
-                elif pattern_parts[p] == '*':
-                    break
-            score = 0
-            break
+        score = 0
+        for identifier_part, pattern_part in itertools.izip_longest(identifier_parts, pattern_parts):
+            if identifier_part is None or pattern_part is None:
+                score = 0
+                break
+
+            if pattern_part == '*':
+                break
+
+            if identifier_part != pattern_part:
+                score = 0
+                break
+
+            score = score + 1
 
         return score
