@@ -4,10 +4,7 @@ import hashlib
 import logging
 import macho_cs
 
-import utils
-
 log = logging.getLogger(__name__)
-
 
 # See the documentation for an explanation of how
 # CodeDirectory slots work.
@@ -101,7 +98,7 @@ class Codesig(object):
         blob = self.get_blob(magic)
         return macho_cs.Blob_.build(blob)
 
-    def set_entitlements(self, entitlements_path):
+    def set_entitlements(self, entitlements_bytes):
         # log.debug("entitlements:")
         try:
             entitlements = self.get_blob('CSMAGIC_ENTITLEMENT')
@@ -114,8 +111,8 @@ class Codesig(object):
             # entitlements_data = macho_cs.Blob_.build(entitlements)
             # log.debug(hashlib.sha1(entitlements_data).hexdigest())
 
-            entitlements.bytes = open(entitlements_path, "rb").read()
-            entitlements.length = len(entitlements.bytes) + 8
+            entitlements.bytes = entitlements_bytes
+            entitlements.length = len(entitlements_bytes) + 8
             # entitlements_data = macho_cs.Blob_.build(entitlements)
             # log.debug(hashlib.sha1(entitlements_data).hexdigest())
 
@@ -298,13 +295,12 @@ class Codesig(object):
         """ Do the actual signing. Create the structure and then update all the
             byte offsets """
 
-        # TODO - the way entitlements are handled is a code smell
-        # 1 - We're doing a hasattr to detect whether it's a top-level app. isinstance(App, bundle) ?
-        # 2 - unlike the seal_path and info_path, the entitlements_path is not functional. Apps are verified
-        #     based on the entitlements encoded into the code signature and slots and MAYBE the pprof.
-        # Possible refactor - make entitlements data part of CmsSigner rather than Bundle?
-        if hasattr(bundle, 'entitlements_path') and bundle.entitlements_path is not None:
-            self.set_entitlements(bundle.entitlements_path)
+        # TODO - the way entitlements are handled is a bit of a code smell
+        # We're doing a hasattr on entitlements_path to detect whether it's a top-level app.
+        #      maybe - isinstance(App, bundle) ?
+        # Also we don't actually need a path to entitlements, just the entitlements data as bytes.
+        if hasattr(bundle, 'entitlements') and bundle.entitlements is not None:
+            self.set_entitlements(bundle.entitlements)
         self.set_requirements(signer)
         # See docs/codedirectory.rst for some notes on optional hashes
         self.set_codedirectory(bundle.seal_path, bundle.info_path, signer)

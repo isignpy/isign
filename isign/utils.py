@@ -16,3 +16,4 @@ def print_structure(container, struct):
     actual_data = struct.build(container)
     return "{}".format(struct.parse(actual_data))
 
+

@@ -6,16 +6,14 @@
 # offer what we need for cms, so we also need to shell out to the openssl
 # tool, and make sure it's the right version.
 
-from distutils import spawn
 from exceptions import (ImproperCredentials,
-                        MissingCredentials,
-                        OpenSslFailure)
+                        MissingCredentials)
 import logging
 from OpenSSL import crypto
 import os
 import os.path
-import subprocess
 import re
+import sys
 import asn1crypto.cms
 import asn1crypto.core
 import asn1crypto.pem
@@ -23,65 +21,10 @@ import asn1crypto.x509
 import plistlib
 from datetime import datetime
 from macho_cs import SHA1_HASHTYPE, SHA256_HASHTYPE
+from openssl_shell import OpenSslShell
 
-OPENSSL = os.getenv('OPENSSL', spawn.find_executable('openssl', os.getenv('PATH', '')))
-# modern OpenSSL versions look like '0.9.8zd'. Use a regex to parse
-OPENSSL_VERSION_RE = re.compile(r'(\d+).(\d+).(\d+)(\w*)')
-MINIMUM_OPENSSL_VERSION = '1.0.1'
 
 log = logging.getLogger(__name__)
-
-
-def openssl_command(args, data=None, expect_err=False):
-    """ Given array of args, and optionally data to write,
-        return results of openssl command.
-        Some commands always write something to stderr, so allow
-        for that with the expect_err param. """
-    cmd = [OPENSSL] + args
-    cmd_str = ' '.join(cmd)
-    # log.debug('running command ' + cmd_str)
-    proc = subprocess.Popen(cmd,
-                            stdin=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            stdout=subprocess.PIPE)
-    if data is not None:
-        proc.stdin.write(data)
-    out, err = proc.communicate()
-
-    if not expect_err:
-        if err is not None and err != '':
-            log.error("Command `{0}` returned error:\n{1}".format(cmd_str, err))
-
-    if proc.returncode != 0:
-        msg = "openssl command `{0}` failed, see log for error".format(cmd_str)
-        raise OpenSslFailure(msg)
-
-    if expect_err:
-        return (out, err)
-    else:
-        return out
-
-
-def get_installed_openssl_version():
-    version_line = openssl_command(['version'])
-    # e.g. 'OpenSSL 0.9.8zd 8 Jan 2015'
-    return re.split(r'\s+', version_line)[1]
-
-
-def is_openssl_version_ok(version, minimum):
-    """ check that the openssl tool is at least a certain version """
-    version_tuple = openssl_version_to_tuple(version)
-    minimum_tuple = openssl_version_to_tuple(minimum)
-    return version_tuple >= minimum_tuple
-
-
-def openssl_version_to_tuple(s):
-    """ OpenSSL uses its own versioning scheme, so we convert to tuple,
-        for easier comparison """
-    search = re.search(OPENSSL_VERSION_RE, s)
-    if search is not None:
-        return search.groups()
-    return ()
 
 
 class Pkcs1Signer(object):
@@ -136,13 +79,7 @@ class CmsSigner(object):
             raise ImproperCredentials("Cert file does not contain Subject line"
                                       "with Apple Organizational Unit (OU)")
 
-        self.check_openssl_version()
-
-    def check_openssl_version(self):
-        openssl_version = get_installed_openssl_version()
-        if not is_openssl_version_ok(openssl_version, MINIMUM_OPENSSL_VERSION):
-            msg = "Signing may not work: OpenSSL version is {0}, need {1} !"
-            log.warn(msg.format(openssl_version, MINIMUM_OPENSSL_VERSION))
+        OpenSslShell.check_version()
 
     def print_cms_structure(self, structure, filename):
         """ Warning!! There is a bug which causes structure.debug to silently increase
@@ -263,7 +200,7 @@ class CmsSigner(object):
 
     def _log_parsed_asn1(self, data):
         cmd = ['asn1parse', '-inform', 'DER' '-i']
-        parsed_asn1 = openssl_command(cmd)
+        parsed_asn1 = OpenSslShell.command(cmd)
         log.debug(parsed_asn1)
 
     def get_team_id(self):
@@ -278,7 +215,7 @@ class CmsSigner(object):
             '-text',
             '-noout'
         ]
-        certificate_info = openssl_command(cmd)
+        certificate_info = OpenSslShell.command(cmd)
         subject_with_ou_match = re.compile(r'\s+Subject:.*OU\s?=\s?(\w+)')
         for line in certificate_info.splitlines():
             match = subject_with_ou_match.match(line)

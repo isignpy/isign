@@ -317,10 +317,9 @@ def view(input_path):
 def resign(input_path,
            deep,
            cms_signer,
-           provisioning_profile,
+           provisioner,
            output_path,
-           info_props=None,
-           alternate_entitlements_path=None):
+           info_props=None):
     """ Unified interface to extract any kind of archive from
         a temporary file, resign it with these credentials,
         and create a similar archive for that resigned app """
@@ -338,7 +337,7 @@ def resign(input_path,
         if info_props:
             # Override info.plist props of the parent bundle
             ua.bundle.update_info_props(info_props)
-        ua.bundle.resign(deep, cms_signer, provisioning_profile, alternate_entitlements_path)
+        ua.bundle.resign(deep, cms_signer, provisioner)
         bundle_info = ua.bundle.info
         ua.archive(output_path)
     except NotSignable as e:

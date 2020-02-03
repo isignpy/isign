@@ -111,12 +111,13 @@ capabilities.
 
 #### Set up a distribution provisioning profile for this app.
 
-Your mileage may vary here, but sometimes the App Store does not like to use wildcard
-application identifiers. So, you will need to create a provisioning profile that
-matches the application identifier above, exactly.
+Caveat - the following advice may be incorrect; at present all we have is folklore.
 
-!! maybe we need to use a new distribution cert as well??
-!! maybe we should use a wildcard after all?
+Your mileage may vary here, but sometimes the App Store does not like to use wildcard app identifiers,
+e.g. `YOURTEAMID.net.neilk.*`
+
+So, you will need to create a provisioning profile that
+matches the application identifier above, exactly.
 
 In a web browser, go to developer.apple.com > Certificates, Identifiers and Profiles.
 
@@ -278,4 +279,3 @@ TBD: add docs for such properties here.
 * altool validates and submits your app correctly, but you get an email from Apple later complaining about:
   * ITMS-90034: Missing or invalid signature: The bundle 'com.example.yourApp' at bundle path
     'Payload/yourApp.app' is not signed using an Apple submission certificate. (WORKING ON IT!!!)
-

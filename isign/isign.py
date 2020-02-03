@@ -1,9 +1,12 @@
 import archive
+import biplist
 # import makesig
 import exceptions
+import glob
 import os
 from os.path import dirname, exists, expanduser, join, realpath
 from signer import Pkcs1Signer, CmsSigner
+from provisioner import Provisioner
 
 
 # this comes with the repo
@@ -11,8 +14,7 @@ PACKAGE_ROOT = dirname(realpath(__file__))
 DEFAULT_APPLE_CERT_PATH = join(PACKAGE_ROOT, 'apple_credentials', 'applecerts.pem')
 DEFAULT_CREDENTIAL_FILE_NAMES = {
     'certificate': 'certificate.pem',
-    'key': 'key.pem',
-    'provisioning_profile': 'isign.mobileprovision'
+    'key': 'key.pem'
 }
 
 
@@ -33,25 +35,22 @@ def get_credential_paths(directory, file_names=None):
 
 
 # We will default to using credentials in a particular
-# directory with well-known names. This is complicated because
-# the old way at Sauce Labs (pre-2017) was:
-#   ~/isign-credentials/mobdev.cert.pem, etc.
-# But the new way that everyone should now use:
-#   ~/.isign/certificate.pem, etc.
+# directory with well-known names.
 HOME_DIR = expanduser("~")
-if exists(join(HOME_DIR, 'isign-credentials')):
-    DEFAULT_CREDENTIAL_PATHS = get_credential_paths(
-        join(HOME_DIR, 'isign-credentials'),
-        {
-            'certificate': 'mobdev.cert.pem',
-            'key': 'mobdev.key.pem',
-            'provisioning_profile': 'mobdev1.mobileprovision'
-        }
-    )
-else:
-    DEFAULT_CREDENTIAL_PATHS = get_credential_paths(
-        join(HOME_DIR, '.isign')
-    )
+DEFAULT_CREDENTIAL_PATHS = get_credential_paths(
+    join(HOME_DIR, '.isign')
+)
+DEFAULT_PROVISIONING_PROFILE_PATH = join(HOME_DIR, '.isign', 'isign.mobileprovision')
+
+
+def get_entitlements_paths(directory):
+    """ Given a directory, return list of entitlements files """
+    return glob.glob(join(directory, "*.entitlements"))
+
+
+def get_provisioning_profiles(directory):
+    """ Given a directory, return list of entitlements files """
+    return glob.glob(join(directory, "*.mobileprovision"))
 
 
 def resign_with_creds_dir(input_path,
@@ -59,6 +58,8 @@ def resign_with_creds_dir(input_path,
                           **kwargs):
     """ Do isign.resign(), but with credential files from this directory """
     kwargs.update(get_credential_paths(credentials_directory))
+    kwargs.update({"provisioning_profiles": get_provisioning_profiles(credentials_directory)})
+    kwargs.update({"entitlements_paths": get_entitlements_paths(credentials_directory)})
     return resign(input_path, **kwargs)
 
 
@@ -67,13 +68,14 @@ def resign(input_path,
            apple_cert=DEFAULT_APPLE_CERT_PATH,
            certificate=DEFAULT_CREDENTIAL_PATHS['certificate'],
            key=DEFAULT_CREDENTIAL_PATHS['key'],
-           provisioning_profile=DEFAULT_CREDENTIAL_PATHS['provisioning_profile'],
+           provisioning_profiles=None,
            output_path=join(os.getcwd(), "out"),
            signer_class=Pkcs1Signer,
            signer_arguments=None,
            info_props=None,
-           alternate_entitlements_path=None):
-    """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner and set default arguments """
+           entitlements_paths=None):
+    """ Essentially a wrapper around archive.resign(). We initialize the CmsSigner, entitlements,
+        and set default arguments """
 
     if signer_arguments is None:
         signer_arguments = {}
@@ -86,14 +88,22 @@ def resign(input_path,
                            apple_cert_file=apple_cert,
                            signer_cert_file=certificate)
 
+    if provisioning_profiles is None:
+        provisioning_profiles = [DEFAULT_PROVISIONING_PROFILE_PATH]
+
+    if entitlements_paths is None:
+        entitlements_paths = []
+
+    provisioner = Provisioner(provisioning_profiles, entitlements_paths)
+    # sanity check that all provisioning profiles match certificate?
+
     try:
         return archive.resign(input_path,
                               deep,
                               cms_signer,
-                              provisioning_profile,
+                              provisioner,
                               output_path,
-                              info_props,
-                              alternate_entitlements_path)
+                              info_props)
     except exceptions.NotSignable as e:
         # re-raise the exception without exposing internal
         # details of how it happened
