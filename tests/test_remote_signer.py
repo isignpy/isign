@@ -38,9 +38,9 @@ class TestRemoteSigner(IsignBaseTest):
             isign.resign(
                 IsignBaseTest.TEST_IPA,
                 certificate=IsignBaseTest.CERTIFICATE,
-		provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
+                provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
                 output_path=output_path,
-		signer_class=RemotePkcs1Signer,
+                signer_class=RemotePkcs1Signer,
                 signer_arguments={
                     'host': CONFIG.host,
                     'port': CONFIG.port,
