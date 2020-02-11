@@ -51,7 +51,7 @@ There are a few sample signer modules included in the tests folder, that may be 
 
 * [SimpleSigner](../tests/TestPythonLibDir/SimpleSigner/__init__.py) does nothing, and just prints to STDOUT when signing is invoked.
 * [CallbackSigner](../tests/TestPythonLibDir/CallbackSigner/__init__.py) also does nothing, but calls a callback when signing is invoked.
-* [RemotePkcs1Signer](../tests/TestPythonLibDir/RemotePkcs1Signer/__init.py) is part of our end-to-end test, and makes calls to an [HTTP service](../tests/signing_service.py) to do real [PKCS#1](https://en.wikipedia.org/wiki/PKCS_1) signing.
+* [RemotePkcs1Signer](../tests/TestPythonLibDir/RemotePkcs1Signer/__init__.py) is part of our end-to-end test, and makes calls to an [HTTP service](../tests/signing_service.py) to do real [PKCS#1](https://en.wikipedia.org/wiki/PKCS_1) signing.
 
 #### Initialization
 
