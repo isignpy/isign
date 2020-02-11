@@ -41,7 +41,7 @@ isign.resign(
 
 ### Where to put it
 
-The module will be invoked by name, much as if it were the result of an `import MySigner` python command. 
+The module will be invoked by name, much as if it were the result of an `import MySigner` Python command. 
 You will need to create an appropriate Python module that is 
 available within your `$PYTHONPATH`. See Python documentation for more instructions about that.
 
