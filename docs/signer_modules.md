@@ -15,12 +15,26 @@ command line.
 ## Typical usage
 
 ```bash
+# Simplest possible invocation
 $ isign --signer=MySigner -o resigned.ipa original.ipa
 archived Ipa to /home/alice/resigned.ipa
 
+# Pass some arguments to initialize your signer
 $ isign --signer=AnotherSigner --signerArg='foo=bar' --signerArg='quux=quuux' \
         -o resigned.ipa original.ipa
 archived Ipa to /home/alice/resigned.ipa        
+```
+
+```python
+isign.resign(
+   'original.ipa',
+   output_file='resigned.ipa'
+   signer_class=AnotherSigner,   # your class name, must be in $PYTHONPATH 
+   signer_arguments={            # arguments to initialize the signer
+      'foo': 'bar'
+      'quux': 'quux'
+   }
+)
 ```
 
 ## How to write a Signer module
@@ -33,54 +47,22 @@ available within your `$PYTHONPATH`. See Python documentation for more instructi
 
 ### How to write it
 
-A sample Signer module is available [here](TODO).
+There are a few sample signer modules included in the tests folder, that may be helpful when writing your own.
+
+* [SimpleSigner](tests/testPythonLibDir/SimpleSigner) does nothing, and just prints to STDOUT when signing is invoked.
+* [CallbackSigner](tests/testPythonLibDir/CallbackSigner) also does nothing, but calls a callback when signing is invoked.
+* [RemotePkcs1Signer](tests/testPythonLibDir/CallbackSigner) is part of our end-to-end test, and makes calls to an [HTTP service](tests/signing_service.py) to do real [PKCS#1](https://en.wikipedia.org/wiki/PKCS_1) signing.
 
 #### Initialization
 
-Your Python class will be initialized by the following parameters. You may of course ignore them.
+Your Signer class can be initialized with whatever arguments you like.
 
-* `signer_key_file` - string, an absolute filesystem path to the configured private key.
-* `signer_cert_file` - string, an absolute filesystem path to the configured certificate.
-* `apple_cert_file` - string, an absolute filesystem path to Apple certificate.
-* `signer_args` - dictionary of string keys to string values, extra arguments defined on the command line.
+As in the examples above, you can pass those initialization arguments on the command line or via a Python program.
 
-These key and certificate parameters are determined from command-line arguments and configuration conventions. 
-See the README or other documentation, or use `isign --help` for more information.
-    
-You may also pass additional initialization arguments to your Signer class with isign's `--signerArg` command-line  
-flag. For instance, in this invocation:
-
-```bash
-$ isign --signer=AnotherSigner --signerArg='foo=bar' --signerArg='quux=quuux' \
-        -o resigned.ipa original.ipa
-```
-
-The `AnotherSigner` class will be initialized with something like the following arguments:
-
-```python
-arguments = { 
-    'signer_key_file': '/home/alice/.isign/key.pem',
-    'signer_cert_file': '/home/alice/.isign/certificate.pem',
-    'apple_cert_file': '/path/to/python/lib/site-packages/isign/apple_credentials/applecerts.pem',
-    'signer_args': {
-        'foo': 'bar',
-        'quux': 'quuux'
-    }
-}
-```
-
-Tip: be aware that command line arguments aren't secure. Other users can see the exact command you are running, and 
-it might be stored in your shell's `history`. So avoid doing things like `--signerArg='password=hunter2'`.
-
-For passing sensitive configuration into your signer module, you should consider other strategies.
-
-* Pass the path to a configuration file, like, `--signerArg='config=~/alice/signerconfig.json` 
-  with appropriately secure permissions on that file
-* Use environment variables. They will be available to your entire process, including within your signer class.
 
 #### Interface
 
-Your class, once initialized as on object, must implement these methods:
+Your class, once initialized as on object, must implement one method:
 
 ##### `sign(self, data)`
 
@@ -103,27 +85,10 @@ should be provided to your class as `apple_cert_file`.
 Also see the implementation of isign's `Signer.sign` for hints. This is not a trivial thing to get right, so take your
 time and be patient.
 
-##### `get_team_id()`
-
-Return a string of the Team ID, sometimes called the Organizational Unit or App ID Prefix in 
-Apple parlance. Usually an eight-character string, all uppercase letters. This is derivable 
-from your certificate; it's in the `Subject: OU=` line. Otherwise check your account at 
-developer.apple.com. It can usually be found in the "Identifiers" section.
-
-
-##### `is_adhoc()`
-
-Unless you know what you are doing here, always return False.
-
-
-##### `get_common_name()`
-
-Return a string corresponding to your common name. This is derivable from your certificate, in the
-`CN=` Subject. Usually 
- 
 
 ## Hints on secure design
 
+### General principles
 There is only one element of signing that absolutely must remain private: the private key.
 
 Everything else is public knowledge. Your certificate, and Apple's certificates, can be passed around in the clear.
@@ -131,3 +96,13 @@ Everything else is public knowledge. Your certificate, and Apple's certificates,
 Consequently, if you need to store your keys in an HSM, you can make life easier on yourself by treating some or
 all of the certificates as information you pass in as arguments. Your certificate just needs to be paired with 
 the right key.
+
+### Invocation
+Be aware that command line arguments aren't secure. Other users can see the exact command you are running, and 
+it might be stored in your shell's `history`. So avoid doing things like `--signerArg='password=hunter2'`.
+
+For passing sensitive configuration into your signer module, you should consider other strategies.
+
+* Pass the path to a configuration file, like, `--signerArg='config=~/alice/signerconfig.json` 
+  with appropriately secure permissions on that file
+* Use environment variables. They will be available to your entire process, including within your signer class.
