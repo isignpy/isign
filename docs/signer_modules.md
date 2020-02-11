@@ -47,9 +47,9 @@ available within your `$PYTHONPATH`. See Python documentation for more instructi
 
 There are a few sample signer modules included in the tests folder, that may be helpful when writing your own.
 
-* [SimpleSigner](tests/testPythonLibDir/SimpleSigner) does nothing, and just prints to STDOUT when signing is invoked.
-* [CallbackSigner](tests/testPythonLibDir/CallbackSigner) also does nothing, but calls a callback when signing is invoked.
-* [RemotePkcs1Signer](tests/testPythonLibDir/CallbackSigner) is part of our end-to-end test, and makes calls to an [HTTP service](tests/signing_service.py) to do real [PKCS#1](https://en.wikipedia.org/wiki/PKCS_1) signing.
+* [SimpleSigner](../tests/testPythonLibDir/SimpleSigner) does nothing, and just prints to STDOUT when signing is invoked.
+* [CallbackSigner](../tests/testPythonLibDir/CallbackSigner) also does nothing, but calls a callback when signing is invoked.
+* [RemotePkcs1Signer](../tests/testPythonLibDir/CallbackSigner) is part of our end-to-end test, and makes calls to an [HTTP service](../tests/signing_service.py) to do real [PKCS#1](https://en.wikipedia.org/wiki/PKCS_1) signing.
 
 #### Initialization
 
