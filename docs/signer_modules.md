@@ -32,7 +32,7 @@ isign.resign(
    signer_class=AnotherSigner,   # your class name, must be in $PYTHONPATH 
    signer_arguments={            # arguments to initialize the signer
       'foo': 'bar'
-      'quux': 'quux'
+      'quux': 'quuux'
    }
 )
 ```
