@@ -5,9 +5,7 @@
 At its core, `isign` is simply doing cryptographic signatures
 of certain parts of your app, and then inserting those signatures into a new copy of your app.
  
-Sometimes, you might need a more custom way of performing these cryptographic signatures. 
-Perhaps you would prefer not to use `openssl` or use PEM files. Maybe, for security reasons, you can't store
-your private keys locally and you need to use a hardware security module.
+Sometimes, you might need a more custom way of performing these cryptographic signatures. Maybe, for security reasons, you can't store your private keys locally in PEM files. Maybe you want to use some sort of system which manages your secrets, or even does the signing for you somewhere else.
 
 You can simply write a Python module to interface with your preferred way to sign data, and invoke it on the 
 command line.
@@ -59,7 +57,6 @@ Your Signer class can be initialized with whatever arguments you like.
 
 As in the examples above, you can pass those initialization arguments on the command line or via a Python program.
 
-
 #### Interface
 
 Your class, once initialized as on object, must implement one method:
@@ -70,20 +67,9 @@ Your class, once initialized as on object, must implement one method:
 
 This method must return a string, a signature of the given data.
 
-The signature is a [CMS](https://en.wikipedia.org/wiki/Cryptographic_Message_Syntax) signature of the 
-given data in [DER](https://wiki.openssl.org/index.php/DER) form.
+The signature is a [PKCS#1 signature](https://en.wikipedia.org/wiki/PKCS_1), as a Python string, in DER form. 
 
-The signing key must be the private key of the public-private pair registered to your Apple developer 
-organization. Depending on how you're doing this, it may have already been provided to your class in the 
-`signer_key_file`. The signing certificate must be the Apple-provided certificate for your developer organization. 
-This may have been already provided in the `signer_cert_file`. See the [documentation on credentials](credentials.md) 
-for details on keys and certificates.
-
-You must also incorporate the [current public Apple certificate(s)](applecerts.md) as an additional certificate. This 
-should be provided to your class as `apple_cert_file`.
-
-Also see the implementation of isign's `Signer.sign` for hints. This is not a trivial thing to get right, so take your
-time and be patient.
+For a sample of exactly what signature you should produce with standard Python crypto modules, see the implementation of [Signer.PKCS1Signer](../isign/signer.py). It's very simple!
 
 
 ## Hints on secure design
@@ -92,10 +78,6 @@ time and be patient.
 There is only one element of signing that absolutely must remain private: the private key.
 
 Everything else is public knowledge. Your certificate, and Apple's certificates, can be passed around in the clear.
-
-Consequently, if you need to store your keys in an HSM, you can make life easier on yourself by treating some or
-all of the certificates as information you pass in as arguments. Your certificate just needs to be paired with 
-the right key.
 
 ### Invocation
 Be aware that command line arguments aren't secure. Other users can see the exact command you are running, and 
