@@ -5,16 +5,6 @@ import requests
 class RemotePkcs1Signer(object):
     """ Client-side Signer subclass, that calls the Signing Service over HTTP to sign things """
 
-    # payload should look like this, for the string 'foobar'.
-    #
-    # {"key": "demo-signing-with-haas", "plaintext": [{"key": "0", "value": "Zm9vYmFyCg=="}],
-    #    "algorithm": "SIGNATURE_RSA_PKCS1_SHA256"}
-
-    # Expected return:
-    # {
-    #     "signature": { "0": detached_signature_hex_string }
-    # }
-
     # standard headers for request
     headers = {
         'Content-Type': 'application/json',
@@ -22,6 +12,13 @@ class RemotePkcs1Signer(object):
     }
 
     def __init__(self, host, port, key, algorithm="SIGNATURE_RSA_PKCS1_SHA256", keyfile=None):
+	"""
+	:param host:  host of the remote HTTP service
+	:param port:  port of the remote HTTP service
+	:param key:   see signing_service.py, in our case we use the hash of the related cert to identify the key
+	:param algorithm: which algorithm to use
+	:param keyfile: unused, this is a wart :(
+	"""
         self.endpoint = "http://{}:{}/".format(host, port)
         self.key = key
         self.algorithm = algorithm
