@@ -85,6 +85,6 @@ it might be stored in your shell's `history`. So avoid doing things like `--sign
 
 For passing sensitive configuration into your signer module, you should consider other strategies.
 
-* Pass the path to a configuration file, like, `--signerArg='config=~/alice/signerconfig.json` 
+* Pass the path to a configuration file, like, `--signerArg='config=~/alice/signerconfig.json'` 
   with appropriately secure permissions on that file
 * Use environment variables. They will be available to your entire process, including within your signer class.
