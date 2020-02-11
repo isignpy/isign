@@ -41,7 +41,7 @@ isign.resign(
 
 ### Where to put it
 
-The module will be invoked by name, much as if it were the result of an `import MySigner` python commans. 
+The module will be invoked by name, much as if it were the result of an `import MySigner` python command. 
 You will need to create an appropriate Python module that is 
 available within your `$PYTHONPATH`. See Python documentation for more instructions about that.
 
@@ -67,9 +67,7 @@ Your class, once initialized as on object, must implement one method:
 
 `data` is a string, potentially very large.
 
-This method must return a string, a signature of the given data.
-
-The signature is a [PKCS#1 signature](https://en.wikipedia.org/wiki/PKCS_1), as a Python string, in DER form. 
+The method should return a [PKCS#1 signature](https://en.wikipedia.org/wiki/PKCS_1), as a Python string, in DER form. 
 
 For a sample of exactly what signature you should produce with standard Python crypto modules, see the implementation of [Signer.PKCS1Signer](../isign/signer.py). It's very simple!
 
