@@ -12,6 +12,7 @@ command line.
 
 ## Typical usage
 
+### Command line
 ```bash
 # Simplest possible invocation
 $ isign --signer=MySigner -o resigned.ipa original.ipa
@@ -23,6 +24,7 @@ $ isign --signer=AnotherSigner --signerArg='foo=bar' --signerArg='quux=quuux' \
 archived Ipa to /home/alice/resigned.ipa        
 ```
 
+### Python
 ```python
 isign.resign(
    'original.ipa',
