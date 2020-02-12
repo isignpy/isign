@@ -20,7 +20,7 @@ class TestAdhoc(IsignBaseTest):
         output_path = self.get_temp_file()
         isign.resign(self.TEST_IPA,
                      key=None,
-                     provisioning_profile=IsignBaseTest.PROVISIONING_PROFILE,
+                     provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
                      output_path=output_path)
         assert exists(output_path)
         assert os.path.getsize(output_path) > 0
