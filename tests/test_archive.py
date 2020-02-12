@@ -45,7 +45,7 @@ class TestBundleInfo(IsignBaseTest):
         archive = archive_factory(filename)
         assert archive is not None
         assert archive.bundle_info is not None
-        assert archive.bundle_info['CFBundleName'] == 'isignTestApp'
+        assert archive.bundle_info['CFBundleName'] in ['IsignTestApp', 'isignTestApp']
 
     def test_app_archive_info(self):
         self._test_bundle_info(self.TEST_APP)
