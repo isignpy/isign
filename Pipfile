@@ -7,6 +7,7 @@ verify_ssl = true
 nose = "*"
 pytest = "*"
 twine = "*"
+requests = "*"
 v = {editable = true,version = "*"}
 
 [packages]
