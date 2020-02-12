@@ -158,29 +158,31 @@ class CmsSigner(object):
                 _fields = [("ident", asn1crypto.core.ObjectIdentifier),
                            ("value", asn1crypto.core.OctetString)]
 
-            for i, entry in enumerate(signer_info['signed_attrs'][3][1]):
-                parsed = entry.parse()
+            if len(signer_info['signed_attrs']) > 3:
+                for i, entry in enumerate(signer_info['signed_attrs'][3][1]):
+                    parsed = entry.parse()
 
-                if parsed[0].native == SHA1_OID:
-                    for cd_hash in cd_hashes:
-                        if cd_hash['hashType'] == SHA1_HASHTYPE:
-                            val = cd_hash[SHA1_HASHTYPE]
-                elif parsed[0].native == SHA256_OID:
-                    for cd_hash in cd_hashes:
-                        if cd_hash['hashType'] == SHA256_HASHTYPE:
-                            val = cd_hash[SHA256_HASHTYPE]
-                else:
-                    raise ValueError('unexpected entry %s' % parsed[0].native)
-                signer_info['signed_attrs'][3][1][i] = asn1crypto.core.Any(
-                    HashEntry({"ident": parsed[0],
-                               "value": asn1crypto.core.OctetString(val)}))
+                    if parsed[0].native == SHA1_OID:
+                        for cd_hash in cd_hashes:
+                            if cd_hash['hashType'] == SHA1_HASHTYPE:
+                                val = cd_hash[SHA1_HASHTYPE]
+                    elif parsed[0].native == SHA256_OID:
+                        for cd_hash in cd_hashes:
+                            if cd_hash['hashType'] == SHA256_HASHTYPE:
+                                val = cd_hash[SHA256_HASHTYPE]
+                    else:
+                        raise ValueError('unexpected entry %s' % parsed[0].native)
+                    signer_info['signed_attrs'][3][1][i] = asn1crypto.core.Any(
+                        HashEntry({"ident": parsed[0],
+                                   "value": asn1crypto.core.OctetString(val)}))
 
             # Update plist of truncated CodeDirectory hashes
-            plist = plistlib.readPlistFromString(signer_info['signed_attrs'][4][1][0].native)
-            plist['cdhashes'] = [plistlib.Data(cd_hash[cd_hash['hashType']][:20])
-                                 for cd_hash in cd_hashes]
-            signer_info['signed_attrs'][4][1][0] = asn1crypto.core.Any(
-                asn1crypto.core.OctetString(plistlib.writePlistToString(plist)))
+            if len(signer_info['signed_attrs']) > 4:
+                plist = plistlib.readPlistFromString(signer_info['signed_attrs'][4][1][0].native)
+                plist['cdhashes'] = [plistlib.Data(cd_hash[cd_hash['hashType']][:20])
+                                     for cd_hash in cd_hashes]
+                signer_info['signed_attrs'][4][1][0] = asn1crypto.core.Any(
+                    asn1crypto.core.OctetString(plistlib.writePlistToString(plist)))
 
             to_sign = signer_info['signed_attrs'].dump()
             to_sign = '1' + to_sign[1:]  # change type from IMPLICIT [0] to EXPLICIT SET OF, per RFC 5652.
