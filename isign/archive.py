@@ -189,7 +189,7 @@ class AppZipArchive(Archive):
                 if plist_path not in zipfile_obj.namelist():
                     return False
                 plist = cls.get_info(relative_bundle_dir, zipfile_obj)
-        is_native = IosApp.is_native(plist)
+                is_native = IosApp.is_native(plist)
         log.debug("is_native: {}".format(is_native))
         return is_native
 
