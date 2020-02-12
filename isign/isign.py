@@ -40,7 +40,8 @@ HOME_DIR = expanduser("~")
 DEFAULT_CREDENTIAL_PATHS = get_credential_paths(
     join(HOME_DIR, '.isign')
 )
-DEFAULT_PROVISIONING_PROFILE_PATH = join(HOME_DIR, '.isign', 'isign.mobileprovision')
+DEFAULT_PROVISIONING_PROFILE_FILENAME = 'isign.mobileprovision'
+DEFAULT_PROVISIONING_PROFILE_PATH = join(HOME_DIR, '.isign', DEFAULT_PROVISIONING_PROFILE_FILENAME)
 
 
 def get_entitlements_paths(directory):

@@ -1,7 +1,9 @@
+import os.path
 from os.path import isdir
 import isign
 from archive import archive_factory
-from signer import CmsSigner
+from signer import CmsSigner, Pkcs1Signer
+from provisioner import Provisioner
 import logging
 import multiprocessing
 
@@ -10,7 +12,7 @@ log = logging.getLogger(__name__)
 MAX_PROCESSES = multiprocessing.cpu_count()
 
 
-def resign(args):
+def resign(args, deep=True):
     """ Given a tuple consisting of a path to an uncompressed archive,
         credential directory, and desired output path, resign accordingly.
 
@@ -21,19 +23,21 @@ def resign(args):
         log.debug('resigning with %s %s -> %s', ua.path, cred_dir, resigned_path)
         # get the credential files, create the 'signer'
         credential_paths = isign.get_credential_paths(cred_dir)
-        signer = CmsSigner(signer_cert_file=credential_paths['certificate'],
-                           signer_key_file=credential_paths['key'],
+        signer = CmsSigner(signer=Pkcs1Signer(credential_paths['key']),
+                           signer_cert_file=credential_paths['certificate'],
                            apple_cert_file=isign.DEFAULT_APPLE_CERT_PATH)
 
         # sign it (in place)
-        ua.bundle.resign(signer, credential_paths['provisioning_profile'])
+        provisioner = Provisioner(os.path.join(cred_dir, isign.DEFAULT_PROVISIONING_PROFILE_FILENAME), [])
+        ua.bundle.resign(deep, signer, provisioner)
 
         log.debug("outputing %s", resigned_path)
         # and archive it there
         ua.archive(resigned_path)
 
     finally:
-        ua.remove()
+        if ua is not None and isdir(ua.path):
+            ua.remove()
 
     return (cred_dir, resigned_path)
 
