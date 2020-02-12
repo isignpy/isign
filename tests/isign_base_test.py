@@ -54,7 +54,7 @@ class IsignBaseTest(unittest.TestCase):
         args.update({
             "key": self.KEY,
             "certificate": self.CERTIFICATE,
-            "provisioning_profile": self.PROVISIONING_PROFILE
+            "provisioning_profiles": [self.PROVISIONING_PROFILE]
         })
         return isign.resign(filename, **args)
 
