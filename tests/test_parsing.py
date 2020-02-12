@@ -16,7 +16,7 @@ class TestParsing(IsignBaseTest):
     def test_app(self):
         with open(self.TEST_APP_CODESIG_STR, 'r') as f:
             expected_codesig_str = f.read().strip()
-        bundle = isign.bundle.App(self.TEST_APP)
+        bundle = isign.bundle.IosApp(self.TEST_APP)
         executable = Executable(bundle, bundle.get_executable_path(), None)
         arch = executable.arches[0]
         codesig_str = str(arch['cmds']['LC_CODE_SIGNATURE'])
