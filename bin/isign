@@ -282,7 +282,7 @@ if __name__ == '__main__':
                            'deep',
                            'key',
                            'apple_cert',
-                           'provisioning_profile',
+			   'provisioning_profiles',
                            'output_path',
                            'entitlements_paths',
                            'signer_class',
