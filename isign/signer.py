@@ -27,6 +27,11 @@ from openssl_shell import OpenSslShell
 log = logging.getLogger(__name__)
 
 
+# TODO: one day we need to refactor CmsSigner/AdhocCmsSigner and all the .is_adhoc() stuff into a "signing strategy"
+# Rather than embedding the knowledge of how to resign in all the archives/bundles/signables etc, group into a strategy
+# This would combine CmsSigner and Provisioner into one thing.
+
+
 class Pkcs1Signer(object):
     """ low-level PKCS#1 signer, which can be used by a CmsSigner to do
     the underlying signing operation """
@@ -235,7 +240,7 @@ class AdhocCmsSigner(CmsSigner):
     def __init__(self):
         pass
 
-    def sign(self, data):
+    def sign(self, oldsig, cd_hashes):
         """Return empty signature"""
         return ''
 

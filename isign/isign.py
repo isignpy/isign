@@ -5,7 +5,7 @@ import exceptions
 import glob
 import os
 from os.path import dirname, exists, expanduser, join, realpath
-from signer import Pkcs1Signer, CmsSigner
+from signer import Pkcs1Signer, CmsSigner, AdhocCmsSigner
 from provisioner import Provisioner
 
 
@@ -62,6 +62,22 @@ def resign_with_creds_dir(input_path,
     kwargs.update({"provisioning_profiles": get_provisioning_profiles(credentials_directory)})
     kwargs.update({"entitlements_paths": get_entitlements_paths(credentials_directory)})
     return resign(input_path, **kwargs)
+
+
+def resign_adhoc(input_path,
+                 deep=True,
+                 output_path=join(os.getcwd(), "out"),
+                 info_props=None):
+    cms_signer = AdhocCmsSigner()
+    try:
+        return archive.resign(input_path,
+                              deep,
+                              cms_signer,
+                              None,  # no provisioner
+                              output_path,
+                              info_props)
+    except exceptions.NotSignable as e:
+        raise NotSignable(e)
 
 
 def resign(input_path,
