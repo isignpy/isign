@@ -160,8 +160,23 @@ def parse_args():
         metavar='<foo=bar>',
         help='Keyword=value arguments for signer module (can be used multiple times)',
     )
+    parser.add_argument(
+        '--adhoc',
+        required=False,
+        dest='adhoc',
+        action='store_true',
+        help='Sign adhoc (empty signature)'
+    )
 
     return parser.parse_args()
+
+
+def check_incompatible_args(args, check_against_argument, incompatible_args):
+    for k, v in vars(args).iteritems():
+        if k in incompatible_args and v is not None:
+            raise Exception("Incompatible arguments. Do not use any of " +
+                            ", ".join(['--' + s for s in incompatible_args])
+                            + " with the --{} argument.".format(check_against_argument))
 
 
 def filter_args(args, interested):
@@ -217,6 +232,19 @@ if __name__ == '__main__':
             if info_props:
                 kwargs['info_props'] = info_props
 
+        if args.adhoc:
+            # Handle adhoc resign. Credential files are irrelevant
+            check_incompatible_args(args, '--adhoc', ['apple_cert',
+                                                      'certificate',
+                                                      'key',
+                                                      'provisioning_profiles',
+                                                      'signer_class',
+                                                      'signer_arguments',
+                                                      'entitlements_paths'])
+            kwargs.update(filter_args(args, ['deep',
+                                             'output_path']))
+            isign.resign(app_path, **kwargs)
+
         if args.inplace:
             if args.output_path is not None:
                 raise Exception('output-path and inplace should not be both specified')
@@ -234,34 +262,10 @@ if __name__ == '__main__':
                     k, v = pair.split('=')
                     args.signer_arguments[k] = v
 
-        if args.fingerprint:
-            incompatible_args = ['certificate', 'key']
-            args_dict = vars(args)
-            for k, v in vars(args).iteritems():
-                if k in incompatible_args and v is not None:
-                    raise Exception("Incompatible arguments. Do not use any of " +
-                                    ", ".join(['--' + s for s in incompatible_args]) + " "
-                                    "with the --sign argument.")
-
-            if args.fingerprint != '-':
-                raise Exception("Currently only - (ad hoc) is supported as a fingerprint value.")
-            resign_args = ['deep',
-                           'output_path',
-                           'signer_class',
-                           'signer_arguments']
-            kwargs.update(filter_args(args, resign_args))
-            isign.resign(app_path, **kwargs)
-
-        elif args.credentials_dir:
+        if args.credentials_dir:
             # Handle a resign with credentials directory.
             # First check they haven't over-specified credential paths
-            incompatible_args = ['certificate', 'key', 'provisioning_profile']
-            args_dict = vars(args)
-            for k, v in vars(args).iteritems():
-                if k in incompatible_args and v is not None:
-                    raise Exception("Incompatible arguments. Do not use any of " +
-                                    ", ".join(['--' + s for s in incompatible_args]) + " "
-                                    "with the --credentials argument.")
+            check_incompatible_args(args, '--credentials_dir / -n', ['certificate', 'key', 'provisioning_profiles'])
             # looks good, now massage args into method arguments
             resign_args = ['apple_cert',
                            'deep',
@@ -282,7 +286,7 @@ if __name__ == '__main__':
                            'deep',
                            'key',
                            'apple_cert',
-			   'provisioning_profiles',
+                           'provisioning_profiles',
                            'output_path',
                            'entitlements_paths',
                            'signer_class',

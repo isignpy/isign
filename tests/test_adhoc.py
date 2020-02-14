@@ -11,17 +11,11 @@ class TestAdhoc(IsignBaseTest):
 
     def test_adhoc_signing(self):
         """
-        Ad-hoc signing is "identityless" signing. We indicate this by simply not providing the key.
-
-        These options were added by Facebook. It's not obvious if they still work.
-        This test looks like it should work, but doesn't because other parts of the code still want an
-        Entitlements file?
+        Ad-hoc signing is "identityless" signing.
         """
         output_path = self.get_temp_file()
-        isign.resign(self.TEST_IPA,
-                     key=None,
-                     provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
-                     output_path=output_path)
+        isign.resign_adhoc(self.TEST_IPA,
+                           output_path=output_path)
         assert exists(output_path)
         assert os.path.getsize(output_path) > 0
         self.unlink(output_path)
