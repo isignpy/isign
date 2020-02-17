@@ -19,7 +19,7 @@ class IsignBaseTest(unittest.TestCase):
     TEST_APP_CODESIG_STR = join(TEST_XCODE7_DIR,
                                 'Test.app.codesig.construct.txt')  # FIXME, ios11+
     TEST_APPZIP = TEST_APP + '.zip'  # FIXME, ios11+ or maybe don't even bother any more
-    TEST_IPA = join(TEST_XCODE11_DIR, 'Test.ipa')
+    TEST_IPA = join(TEST_XCODE7_DIR, 'Test.ipa')
     TEST_WITH_FRAMEWORKS_IPA = join(TEST_XCODE7_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
     TEST_NONAPP_DIR = join(TEST_APPS_MISC_DIR, 'NotAnAppDir')
     TEST_NONAPP_TXT = join(TEST_APPS_MISC_DIR, 'NotAnApp.txt')
