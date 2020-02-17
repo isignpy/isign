@@ -34,9 +34,8 @@ class TestArchive(IsignBaseTest):
         archive = archive_factory(self.TEST_NONAPP_TXT)
         assert archive is None
 
-    def test_archive_factory_nonapp_simulator_app(self):
-        archive = archive_factory(self.TEST_SIMULATOR_APP)
-        assert archive is None
+    def test_archive_factory_simulator_app(self):
+	self._test_good(self.TEST_SIMULATOR_APP, AppZipArchive)
 
 
 class TestBundleInfo(IsignBaseTest):
