@@ -39,4 +39,4 @@ class TestPublicInterface(IsignBaseTest):
         self._test_unsignable(self.TEST_NONAPP_IPA, self.get_temp_file())
 
     def test_simulator_app(self):
-        self._test_unsignable(self.TEST_SIMULATOR_APP, self.get_temp_file())
+        self.resign_adhoc(self.TEST_SIMULATOR_APP, output_path=self.get_temp_file())
