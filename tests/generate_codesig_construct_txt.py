@@ -21,8 +21,8 @@ def log_to_stderr(level=logging.INFO):
 log_to_stderr(logging.DEBUG)
 log = logging.getLogger(__name__)
 log.debug("generating a signature parse for an app")
-app = isign.archive.AppArchive(IsignBaseTest.TEST_APP)
-executable = Executable(app.get_executable_path())
+bundle = isign.archive.IosApp(IsignBaseTest.TEST_APP)
+executable = Executable(bundle, bundle.get_executable_path(), None)
 arch = executable.arches[0]
 codesig_str = str(arch['cmds']['LC_CODE_SIGNATURE'])
 print codesig_str
