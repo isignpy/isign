@@ -34,6 +34,7 @@ class TestRemoteSigner(IsignBaseTest):
 
         try:
             httpd_process = self.start_httpd()
+            time.sleep(10)
 
             isign.resign(
                 IsignBaseTest.TEST_IPA,
