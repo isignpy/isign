@@ -28,7 +28,8 @@ def resign(args, deep=True):
                            apple_cert_file=isign.DEFAULT_APPLE_CERT_PATH)
 
         # sign it (in place)
-        provisioner = Provisioner(os.path.join(cred_dir, isign.DEFAULT_PROVISIONING_PROFILE_FILENAME), [])
+        provisioning_profile = os.path.join(cred_dir, isign.DEFAULT_PROVISIONING_PROFILE_FILENAME)
+        provisioner = Provisioner([provisioning_profile], [])
         ua.bundle.resign(deep, signer, provisioner)
 
         log.debug("outputing %s", resigned_path)
@@ -114,14 +115,14 @@ def multisign_archive(archive, cred_dirs_to_output_paths, info_props=None):
         assert len(uas) == len(cred_dirs_to_output_paths)
 
         # We will now construct arguments for all the resignings
-        resign_args = []
+        resign_args_tuples = []
         for i, (cred_dir, output_path) in enumerate(cred_dirs_to_output_paths.items()):
-            resign_args.append((uas[i], cred_dir, output_path))
-        log.debug('resign args: %s', resign_args)
+            resign_args_tuples.append((uas[i], cred_dir, output_path))
+        log.debug('resign args: %s', resign_args_tuples)
 
         # In parallel, resign each uncompressed archive with supplied credentials,
         # and make archives in the desired paths.
-        results = p.map(resign, resign_args)
+        results = p.map(resign, resign_args_tuples)
 
     except isign.NotSignable as e:
         msg = "Not signable: <{0}>: {1}\n".format(archive.path, e)
