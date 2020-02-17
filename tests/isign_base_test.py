@@ -61,6 +61,9 @@ class IsignBaseTest(unittest.TestCase):
         })
         return isign.resign(filename, **args)
 
+    def resign_adhoc(self, filename, **args):
+        return isign.resign_adhoc(filename, **args)
+
     def unlink(self, path):
         if exists(path):
             if isdir(path):
