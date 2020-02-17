@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9accd531c825dc88e44242a86e3a815a0fbf4faada8bafa977cc8becaa1e4476"
+            "sha256": "d66a67f6c608e8079ce6d632f0ee32559eed97b3fca3f099602ea66231422023"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -195,7 +195,7 @@
                 "sha256:01f490098c18b19d2bd5bb5dc445b2054d2fa97f09a4280ba2c5f3c394c8162e",
                 "sha256:3355078a159fbb44ee60ea80abd0d87b80b78c248643b49aa6d94673b413609b"
             ],
-            "markers": "python_version < '3'",
+            "markers": "python_version < '3.4'",
             "version": "==0.6.0.post1"
         },
         "docutils": {
@@ -258,7 +258,7 @@
                 "sha256:0ec8205a157c80d7acc301c0b18fbd5d44fe655968f5d947b6ecef5290fc35db",
                 "sha256:6cd9a47b597b37cc57de1c05e56fb1a1c9cc9fab04fe78c29acd090418529868"
             ],
-            "markers": "python_version < '3'",
+            "markers": "python_version < '3.6'",
             "version": "==2.3.5"
         },
         "pkginfo": {
