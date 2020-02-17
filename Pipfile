@@ -15,6 +15,7 @@ biplist = "==0.9"
 construct = "==2.5.2"
 memoizer = "==0.0.1"
 pyOpenSSL = ">=19"
+asn1crypto = "*"
 
 [requires]
 python_version = "2.7"
