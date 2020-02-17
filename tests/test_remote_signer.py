@@ -19,7 +19,7 @@ class TestRemoteSigner(IsignBaseTest):
         with open(os.devnull, 'w') as dev_null:
             test_dir = os.path.dirname(os.path.abspath(__file__))
             start_httpd_command = [sys.executable, os.path.join(test_dir, "signing_service.py")]
-            httpd_process = subprocess.Popen(start_httpd_command, stdout=dev_null, stderr=dev_null)
+            httpd_process = subprocess.Popen(start_httpd_command) # , stdout=dev_null, stderr=dev_null)
             # wait for httpd to start. As far as I know this is the simplest thing to do, without:
             #   - in the server, subclassing HTTPServer to print a message when ready (and even that's not reliable)
             #   - starting a thread and blocking here to wait for it
@@ -34,7 +34,6 @@ class TestRemoteSigner(IsignBaseTest):
 
         try:
             httpd_process = self.start_httpd()
-            time.sleep(10)
 
             isign.resign(
                 IsignBaseTest.TEST_IPA,
