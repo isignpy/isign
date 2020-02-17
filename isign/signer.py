@@ -19,6 +19,7 @@ import asn1crypto.core
 import asn1crypto.pem
 import asn1crypto.x509
 import plistlib
+import pytz
 from datetime import datetime
 from macho_cs import SHA1_HASHTYPE, SHA256_HASHTYPE
 from openssl_shell import OpenSslShell
@@ -149,7 +150,8 @@ class CmsSigner(object):
                                                           serial_number=signer_cert.serial_number)))
 
             # Update signingTime
-            signer_info['signed_attrs'][1][1][0] = asn1crypto.cms.Time("utc_time", datetime.utcnow())
+            now = datetime.utcnow().replace(tzinfo=pytz.utc)
+            signer_info['signed_attrs'][1][1][0] = asn1crypto.cms.Time("utc_time", now)
 
             # Update messageDigest
             signer_info['signed_attrs'][2][1][0] = cd_hashes[0][SHA256_HASHTYPE]
