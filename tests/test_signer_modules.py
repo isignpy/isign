@@ -2,8 +2,6 @@ from isign import isign
 from isign_base_test import IsignBaseTest
 import logging
 from TestPythonLibDir.CallbackSigner import CallbackSigner
-from os.path import dirname, join, realpath
-import sys
 
 log = logging.getLogger(__name__)
 
@@ -22,10 +20,11 @@ class TestSignerModules(IsignBaseTest):
 
         isign.resign(
             IsignBaseTest.TEST_IPA,
+            key=None,
             certificate=IsignBaseTest.CERTIFICATE,
             provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
             output_path=output_path,
             signer_class=CallbackSigner,
-            signer_arguments={'callback': callback}
+            signer_arguments={'callback': callback, 'keyfile': IsignBaseTest.KEY}
         )
         assert len(calls) > 0
