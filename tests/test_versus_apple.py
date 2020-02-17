@@ -2,6 +2,7 @@ from distutils import spawn
 from isign_base_test import IsignBaseTest
 import logging
 from nose.plugins.skip import SkipTest
+from nose.tools import nottest
 import os
 from os.path import join
 import platform
@@ -297,7 +298,7 @@ class TestVersusApple(IsignBaseTest):
         os.chdir(old_cwd)
         shutil.rmtree(working_dir)
 
-
+    @nottest  # this seems to be how nose wants you to do a "skip" decorator
     def test_app_from_scratch(self):
         """ Test signing app bundles from scratch """
         # skip if this isn't a Mac with codesign installed
