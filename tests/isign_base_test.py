@@ -12,16 +12,19 @@ log = logging.getLogger(__name__)
 
 class IsignBaseTest(unittest.TestCase):
     TEST_DIR = dirname(__file__)
-    TEST_APP = join(TEST_DIR, 'Test.app')  # FIXME, ios11+ or maybe don't even bother any more
-    TEST_APP_CODESIG_STR = join(TEST_DIR,
+    TEST_APPS_MISC_DIR = join(TEST_DIR, 'apps', 'misc')
+    TEST_XCODE7_DIR = join(TEST_DIR, 'apps', 'xcode7')
+    TEST_XCODE11_DIR = join(TEST_DIR, 'apps', 'xcode11')
+    TEST_APP = join(TEST_XCODE7_DIR, 'Test.app')  # FIXME, ios11+ or maybe don't even bother any more
+    TEST_APP_CODESIG_STR = join(TEST_XCODE7_DIR,
                                 'Test.app.codesig.construct.txt')  # FIXME, ios11+
     TEST_APPZIP = TEST_APP + '.zip'  # FIXME, ios11+ or maybe don't even bother any more
-    TEST_IPA = join(TEST_DIR, 'Test.ipa')
-    TEST_WITH_FRAMEWORKS_IPA = join(TEST_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
-    TEST_NONAPP_DIR = join(TEST_DIR, 'NotAnAppDir')
-    TEST_NONAPP_TXT = join(TEST_DIR, 'NotAnApp.txt')
-    TEST_NONAPP_IPA = join(TEST_DIR, 'NotAnApp.ipa')
-    TEST_SIMULATOR_APP = join(TEST_DIR, 'TestSimulator.app.zip')  # FIXME, ios11+
+    TEST_IPA = join(TEST_XCODE11_DIR, 'Test.ipa')
+    TEST_WITH_FRAMEWORKS_IPA = join(TEST_XCODE7_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
+    TEST_NONAPP_DIR = join(TEST_APPS_MISC_DIR, 'NotAnAppDir')
+    TEST_NONAPP_TXT = join(TEST_APPS_MISC_DIR, 'NotAnApp.txt')
+    TEST_NONAPP_IPA = join(TEST_APPS_MISC_DIR, 'NotAnApp.ipa')
+    TEST_SIMULATOR_APP = join(TEST_XCODE7_DIR, 'TestSimulator.app.zip')  # FIXME, ios11+
     KEY = join(TEST_DIR, 'credentials', 'test.key.pem')
     CERTIFICATE = join(TEST_DIR, 'credentials', 'test.cert.pem')
     PROVISIONING_PROFILE = join(TEST_DIR, 'credentials', 'test.mobileprovision')
@@ -29,8 +32,8 @@ class IsignBaseTest(unittest.TestCase):
     CREDENTIALS_DIR = join(TEST_DIR, 'credentials_std_names')
     CREDENTIALS_DIR_2 = join(TEST_DIR, 'credentials_std_names_2')
 
-    TEST_UNSIGNED_THIN_APP = join(TEST_DIR, 'Test_unsigned_thin.app')
-    TEST_UNSIGNED_FAT_APP = join(TEST_DIR, 'Test_unsigned_fat.app')
+    TEST_UNSIGNED_THIN_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_thin.app')
+    TEST_UNSIGNED_FAT_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_fat.app')
 
     # Fake Apple organizational unit
     OU = 'ISIGNTESTS'
