@@ -36,6 +36,12 @@ class IsignBaseTest(unittest.TestCase):
     TEST_UNSIGNED_THIN_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_thin.app')
     TEST_UNSIGNED_FAT_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_fat.app')
 
+    # XCode11 ipas
+    # See the isignpy Github org for sources
+    TEST_IPA_XCODE11 = join(TEST_XCODE11_DIR, 'isignTestApp.ipa')  # A simple test app
+    TEST_FRAMEWORKS_IPA_XCODE11 = join(TEST_XCODE11_DIR, 'isignFrameworksTestApp.ipa')  # ...with a cocoapods framework
+    TEST_WATCH_IPA_XCODE11 = join(TEST_XCODE11_DIR, 'isignTestWatchApp.ipa')  # ...with WatchOS app and related appex
+
     # Credentials
     KEY = join(TEST_DIR, 'credentials', 'test.key.pem')
     CERTIFICATE = join(TEST_DIR, 'credentials', 'test.cert.pem')

@@ -20,16 +20,16 @@ class TestResignApps(IsignBaseTest):
             self.resign(filename, output_path=output_path)
         self.unlink(output_path)
 
-    def test_app(self):
+    def test_app_xcode7(self):
         self._test_signable(self.TEST_APP_XCODE7, self.get_temp_dir())
 
-    def test_app_ipa(self):
+    def test_app_ipa_xcode7(self):
         self._test_signable(self.TEST_IPA_XCODE7, self.get_temp_file())
 
-    def test_app_with_frameworks_ipa(self):
+    def test_app_with_frameworks_ipa_xcode7(self):
         self._test_signable(self.TEST_WITH_FRAMEWORKS_IPA_XCODE7, self.get_temp_file())
 
-    def test_appzip(self):
+    def test_appzip_xcode7(self):
         self._test_signable(self.TEST_APPZIP_XCODE7, self.get_temp_file())
 
     def test_non_app_txt(self):
@@ -38,9 +38,15 @@ class TestResignApps(IsignBaseTest):
     def test_non_app_ipa(self):
         self._test_unsignable(self.TEST_NONAPP_IPA, self.get_temp_file())
 
-    def test_simulator_app(self):
+    def test_simulator_app_xcode7(self):
         self.resign_adhoc(self.TEST_SIMULATOR_APP_XCODE7, output_path=self.get_temp_file())
 
-    def test_watchkit(self):
-        """ TODO - Correctly resign a WatchKit app """
-        pass
+    def test_ipa_xcode11(self):
+        self._test_signable(self.TEST_IPA_XCODE11, self.get_temp_file())
+
+    def test_ipa_frameworks_ipa_xcode11(self):
+        self._test_signable(self.TEST_FRAMEWORKS_IPA_XCODE11, self.get_temp_file())
+
+    def test_watch_ipa_xcode11(self):
+        self._test_signable(self.TEST_WATCH_IPA_XCODE11, self.get_temp_file())
+
