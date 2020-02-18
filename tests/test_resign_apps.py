@@ -7,7 +7,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class TestPublicInterface(IsignBaseTest):
+class TestResignApps(IsignBaseTest):
 
     def _test_signable(self, filename, output_path):
         self.resign(filename, output_path=output_path)
@@ -40,3 +40,7 @@ class TestPublicInterface(IsignBaseTest):
 
     def test_simulator_app(self):
         self.resign_adhoc(self.TEST_SIMULATOR_APP, output_path=self.get_temp_file())
+
+    def test_watchkit(self):
+        """ TODO - Correctly resign a WatchKit app """
+        pass
