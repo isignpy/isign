@@ -3,10 +3,8 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
 from isign.signer import Pkcs1Signer
 import json
-import os
 import pprint
 from signing_service_config import SigningServiceConfig
-import sys
 
 pp = pprint.PrettyPrinter(indent=4)
 CONFIG = SigningServiceConfig()
@@ -18,26 +16,7 @@ cert_hash_to_signer = {cert_hash: Pkcs1Signer(key_file)
 
 
 class SigningServiceHandler(BaseHTTPRequestHandler):
-    """ accepts POST requests with JSON bodies, to sign plaintext:
-    {
-        "key": "alias_for_private_key",
-        "plaintext": [
-            {
-            "key": "0",
-            "value": "Zm9vYmFyCg=="   # base64 encoded value
-            "algorithm": "SIGNATURE_RSA_PKCS1_SHA256"
-            }
-        ]
-        }
-
-    The alias for the private key that we're using is the sha1 hash of the related certificate
-
-    returns JSON in response:
-
-        {
-        "signature": { "0": base64_encoded_signature }
-        }
-    """
+    """ An HTTP handler that can sign data remotely """
 
     # Class "variable" because we want to sometimes suppress logging, and the handler is only passed as
     # an uninitialized class reference. Ugly but this is just for tests
@@ -53,10 +32,31 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        """ Just to test if it's working, accept GET requests at the URL path "/" and return a simple JSON body """
         self._set_headers()
-        self.wfile.write(json.dumps({"hi": "there"}))
+        self.wfile.write(json.dumps({"hello": "world"}))
 
     def do_POST(self):
+        """ accepts POST requests at the URL path "/" with JSON bodies, to sign plaintext:
+        {
+            "key": "alias_for_private_key",
+            "plaintext": [
+                {
+                "key": "0",
+                "value": "Zm9vYmFyCg=="   # base64 encoded value
+                "algorithm": "SIGNATURE_RSA_PKCS1_SHA256"
+                }
+            ]
+            }
+
+        The alias for the private key that we're using is the sha1 hash of the related certificate
+
+        returns JSON in response:
+
+            {
+            "signature": { "0": base64_encoded_signature }
+            }
+        """
         content_type, content_type_parts = cgi.parse_header(self.headers.getheader('content-type'))
 
         # refuse to receive non-json content
