@@ -39,6 +39,10 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
         }
     """
 
+    # Class "variable" because we want to sometimes suppress logging, and the handler is only passed as
+    # an uninitialized class reference. Ugly but this is just for tests
+    quiet = False
+
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -47,6 +51,10 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
     def _client_error(self, message):
         self.send_response(400, message)
         self.end_headers()
+
+    def do_GET(self):
+        self._set_headers()
+        self.wfile.write(json.dumps({"hi": "there"}))
 
     def do_POST(self):
         content_type, content_type_parts = cgi.parse_header(self.headers.getheader('content-type'))
@@ -78,17 +86,19 @@ class SigningServiceHandler(BaseHTTPRequestHandler):
         self._set_headers()
         self.wfile.write(body)
 
+    def log_message(self, format, *args):
+        if not self.quiet:
+            BaseHTTPRequestHandler.log_message(self, format, *args)
+
 
 class SigningService(object):
     """ Server-side signer """
 
     @staticmethod
     def start(quiet=False):
-        if quiet is True:
-            dev_null = open(os.devnull, 'w')
-            sys.stdout = dev_null
-            sys.stderr = dev_null
-        print('Starting httpd at {}:{}...'.format(CONFIG.host, CONFIG.port))
+        SigningServiceHandler.quiet = quiet
+        if not quiet:
+            print('Starting httpd at {}:{}...'.format(CONFIG.host, CONFIG.port))
         httpd = HTTPServer((CONFIG.host, CONFIG.port), SigningServiceHandler)
         httpd.serve_forever()
 
