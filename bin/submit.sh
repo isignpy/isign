@@ -4,7 +4,7 @@
 ipa_file=$1
 
 function warn() {
-  echo $@ 1>&2
+  echo "$@" 1>&2
 }
 
 if [[ -z $APP_STORE_USERNAME ]] || [[ -z $APP_STORE_PASSWORD ]]; then
@@ -15,12 +15,12 @@ fi
 if which "xcrun"; then 
   warn "found xcrun...";
 else
-  warn "Can't find xcrun. Run `xcode-select -r` ?";
+  warn "Can't find xcrun. Run \`xcode-select -r\` ?";
   exit 1;
 fi
 
 function altool_cmd() {
-  local command=$1
+  local command="$1"
   xcrun altool "--$command" --file "$ipa_file" --username "$APP_STORE_USERNAME" --password "$APP_STORE_PASSWORD"
 }
 
