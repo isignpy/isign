@@ -1,10 +1,9 @@
 
 from isign import isign
 from isign_base_test import IsignBaseTest
-import os
+from multiprocessing import Process
+from signing_service import SigningService
 from signing_service_config import SigningServiceConfig
-import subprocess
-import sys
 import time
 from TestPythonLibDir.RemotePkcs1Signer import RemotePkcs1Signer
 
@@ -16,15 +15,16 @@ class TestRemoteSigner(IsignBaseTest):
 
     @staticmethod
     def start_httpd():
-        with open(os.devnull, 'w') as dev_null:
-            test_dir = os.path.dirname(os.path.abspath(__file__))
-            start_httpd_command = [sys.executable, os.path.join(test_dir, "signing_service.py")]
-            httpd_process = subprocess.Popen(start_httpd_command) # , stdout=dev_null, stderr=dev_null)
-            # wait for httpd to start. As far as I know this is the simplest thing to do, without:
-            #   - in the server, subclassing HTTPServer to print a message when ready (and even that's not reliable)
-            #   - starting a thread and blocking here to wait for it
-            time.sleep(1)
-            return httpd_process
+        signing_service = SigningService()
+
+        def start():
+            signing_service.start()
+
+        httpd_process = Process(name='signing_service', target=start)
+        httpd_process.daemon = True
+        httpd_process.start()
+        time.sleep(1)
+        return httpd_process
 
     def test_remote_signer(self):
 
@@ -50,4 +50,4 @@ class TestRemoteSigner(IsignBaseTest):
             # test the output path for correctness
         finally:
             if httpd_process is not None:
-                httpd_process.kill()
+                httpd_process.terminate()
