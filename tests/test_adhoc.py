@@ -14,7 +14,7 @@ class TestAdhoc(IsignBaseTest):
         Ad-hoc signing is "identityless" signing.
         """
         output_path = self.get_temp_file()
-        isign.resign_adhoc(self.TEST_IPA,
+        isign.resign_adhoc(self.TEST_IPA_XCODE7,
                            output_path=output_path)
         assert exists(output_path)
         assert os.path.getsize(output_path) > 0

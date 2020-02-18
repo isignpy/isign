@@ -14,13 +14,13 @@ class TestArchive(IsignBaseTest):
         assert isinstance(archive, Archive)
 
     def test_archive_factory_app(self):
-        self._test_good(self.TEST_APP, AppArchive)
+        self._test_good(self.TEST_APP_XCODE7, AppArchive)
 
     def test_archive_factory_appzip(self):
-        self._test_good(self.TEST_APPZIP, AppZipArchive)
+        self._test_good(self.TEST_APPZIP_XCODE7, AppZipArchive)
 
     def test_archive_factory_ipa(self):
-        self._test_good(self.TEST_IPA, IpaArchive)
+        self._test_good(self.TEST_IPA_XCODE7, IpaArchive)
 
     def test_archive_factory_nonapp_dir(self):
         archive = archive_factory(self.TEST_NONAPP_DIR)
@@ -35,7 +35,7 @@ class TestArchive(IsignBaseTest):
         assert archive is None
 
     def test_archive_factory_simulator_app(self):
-        self._test_good(self.TEST_SIMULATOR_APP, AppZipArchive)
+        self._test_good(self.TEST_SIMULATOR_APP_XCODE7, AppZipArchive)
 
 
 class TestBundleInfo(IsignBaseTest):
@@ -47,36 +47,36 @@ class TestBundleInfo(IsignBaseTest):
         assert archive.bundle_info['CFBundleName'] in ['IsignTestApp', 'isignTestApp']
 
     def test_app_archive_info(self):
-        self._test_bundle_info(self.TEST_APP)
+        self._test_bundle_info(self.TEST_APP_XCODE7)
 
     def test_appzip_archive_info(self):
-        self._test_bundle_info(self.TEST_APPZIP)
+        self._test_bundle_info(self.TEST_APPZIP_XCODE7)
 
     def test_ipa_archive_info(self):
-        self._test_bundle_info(self.TEST_IPA)
+        self._test_bundle_info(self.TEST_IPA_XCODE7)
 
 
 class TestArchivePrecheck(IsignBaseTest):
 
     def test_precheck_app(self):
-        assert AppArchive.precheck(self.TEST_APP)
+        assert AppArchive.precheck(self.TEST_APP_XCODE7)
 
     def test_precheck_appzip(self):
-        assert AppZipArchive.precheck(self.TEST_APPZIP)
+        assert AppZipArchive.precheck(self.TEST_APPZIP_XCODE7)
 
     def test_precheck_ipa(self):
-        assert IpaArchive.precheck(self.TEST_IPA)
+        assert IpaArchive.precheck(self.TEST_IPA_XCODE7)
 
     def test_bad_precheck_app(self):
         assert AppArchive.precheck(self.TEST_NONAPP_DIR) is False
-        assert AppArchive.precheck(self.TEST_APPZIP) is False
-        assert AppArchive.precheck(self.TEST_IPA) is False
+        assert AppArchive.precheck(self.TEST_APPZIP_XCODE7) is False
+        assert AppArchive.precheck(self.TEST_IPA_XCODE7) is False
 
     def test_bad_precheck_appzip(self):
-        assert AppZipArchive.precheck(self.TEST_APP) is False
-        assert AppZipArchive.precheck(self.TEST_IPA) is False
+        assert AppZipArchive.precheck(self.TEST_APP_XCODE7) is False
+        assert AppZipArchive.precheck(self.TEST_IPA_XCODE7) is False
 
     def test_bad_precheck_ipa(self):
-        assert IpaArchive.precheck(self.TEST_APP) is False
-        assert IpaArchive.precheck(self.TEST_APPZIP) is False
+        assert IpaArchive.precheck(self.TEST_APP_XCODE7) is False
+        assert IpaArchive.precheck(self.TEST_APPZIP_XCODE7) is False
         assert IpaArchive.precheck(self.TEST_NONAPP_IPA) is False

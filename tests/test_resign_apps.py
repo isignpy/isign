@@ -21,16 +21,16 @@ class TestResignApps(IsignBaseTest):
         self.unlink(output_path)
 
     def test_app(self):
-        self._test_signable(self.TEST_APP, self.get_temp_dir())
+        self._test_signable(self.TEST_APP_XCODE7, self.get_temp_dir())
 
     def test_app_ipa(self):
-        self._test_signable(self.TEST_IPA, self.get_temp_file())
+        self._test_signable(self.TEST_IPA_XCODE7, self.get_temp_file())
 
     def test_app_with_frameworks_ipa(self):
-        self._test_signable(self.TEST_WITH_FRAMEWORKS_IPA, self.get_temp_file())
+        self._test_signable(self.TEST_WITH_FRAMEWORKS_IPA_XCODE7, self.get_temp_file())
 
     def test_appzip(self):
-        self._test_signable(self.TEST_APPZIP, self.get_temp_file())
+        self._test_signable(self.TEST_APPZIP_XCODE7, self.get_temp_file())
 
     def test_non_app_txt(self):
         self._test_unsignable(self.TEST_NONAPP_TXT, self.get_temp_file())
@@ -39,7 +39,7 @@ class TestResignApps(IsignBaseTest):
         self._test_unsignable(self.TEST_NONAPP_IPA, self.get_temp_file())
 
     def test_simulator_app(self):
-        self.resign_adhoc(self.TEST_SIMULATOR_APP, output_path=self.get_temp_file())
+        self.resign_adhoc(self.TEST_SIMULATOR_APP_XCODE7, output_path=self.get_temp_file())
 
     def test_watchkit(self):
         """ TODO - Correctly resign a WatchKit app """

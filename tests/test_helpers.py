@@ -22,15 +22,15 @@ class TestHelpers(IsignBaseTest):
     def test_helpers_is_present(self):
         """ test that missing helpers raises exception """
         with self.assertRaises(MissingHelpers):
-            MissingHelpersArchive.precheck(self.TEST_APPZIP)
+            MissingHelpersArchive.precheck(self.TEST_APPZIP_XCODE7)
 
     def test_helpers_become_present(self):
         """ test that we can install helpers without restart """
         with self.assertRaises(MissingHelpers):
-            MissingHelpersArchive.precheck(self.TEST_APPZIP)
+            MissingHelpersArchive.precheck(self.TEST_APPZIP_XCODE7)
         spawn._original_find_executable = spawn.find_executable
         spawn.find_executable = dummy_find_executable
-        MissingHelpersArchive.precheck(self.TEST_APPZIP)
+        MissingHelpersArchive.precheck(self.TEST_APPZIP_XCODE7)
         if hasattr(spawn, '_original_find_executable'):
             spawn.find_executable = spawn._original_find_executable
         isign.archive.helper_paths = {}

@@ -16,7 +16,7 @@ class TestMultisign(IsignBaseTest):
             self.CREDENTIALS_DIR: output_path1,
             self.CREDENTIALS_DIR_2: output_path2
         }
-        results = multisign(self.TEST_IPA, creds_dir_to_output_paths)
+        results = multisign(self.TEST_IPA_XCODE7, creds_dir_to_output_paths)
         log.debug("results: %s", results)
         for output_path in [output_path1, output_path2]:
             assert exists(output_path)

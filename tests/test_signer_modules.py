@@ -19,7 +19,7 @@ class TestSignerModules(IsignBaseTest):
         output_path = self.get_temp_file()
 
         isign.resign(
-            IsignBaseTest.TEST_IPA,
+            IsignBaseTest.TEST_IPA_XCODE7,
             key=None,
             certificate=IsignBaseTest.CERTIFICATE,
             provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],

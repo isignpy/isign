@@ -223,7 +223,7 @@ class TestVersusApple(IsignBaseTest):
 
 #        old_cwd = os.getcwd()
 
-        info = self.codesign_display(self.TEST_APP)
+        info = self.codesign_display(self.TEST_APP_XCODE7)
         original_id = info['Identifier'][0]
 
         # Make sure our original ID is long enough to test shorter bundle ids
@@ -238,7 +238,7 @@ class TestVersusApple(IsignBaseTest):
         working_dir = tempfile.mkdtemp()
         os.chdir(working_dir)
         resigned_app_path = join(working_dir, 'Short.app')
-        self.resign(self.TEST_APP,
+        self.resign(self.TEST_APP_XCODE7,
                     output_path=resigned_app_path,
                     info_props={
                         'CFBundleIdentifier': short_id
@@ -251,7 +251,7 @@ class TestVersusApple(IsignBaseTest):
         working_dir = tempfile.mkdtemp()
         os.chdir(working_dir)
         resigned_app_path = join(working_dir, 'Long.app')
-        self.resign(self.TEST_APP,
+        self.resign(self.TEST_APP_XCODE7,
                     output_path=resigned_app_path,
                     info_props={
                         'CFBundleIdentifier': long_id
@@ -274,7 +274,7 @@ class TestVersusApple(IsignBaseTest):
         # resign the test app that has frameworks, extract it to a temp directory
         working_dir = tempfile.mkdtemp()
         resigned_ipa_path = join(working_dir, 'resigned.ipa')
-        self.resign(self.TEST_WITH_FRAMEWORKS_IPA,
+        self.resign(self.TEST_WITH_FRAMEWORKS_IPA_XCODE7,
                     output_path=resigned_ipa_path)
         os.chdir(working_dir)
         with zipfile.ZipFile(resigned_ipa_path) as zf:

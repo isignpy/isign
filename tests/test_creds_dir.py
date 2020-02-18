@@ -14,7 +14,7 @@ class TestCredentialsDir(IsignBaseTest):
         # this directory contains credentials with the standard names
         # key.pem, certificate.pem, isign.mobileprovision
         output_path = self.get_temp_file()
-        isign.resign_with_creds_dir(self.TEST_IPA,
+        isign.resign_with_creds_dir(self.TEST_IPA_XCODE7,
                                     self.CREDENTIALS_DIR,
                                     output_path=output_path)
         assert exists(output_path)
@@ -26,5 +26,5 @@ class TestCredentialsDir(IsignBaseTest):
         credentials_dir = join(self.TEST_DIR, 'credentials')
         output_path = self.get_temp_file()
         with self.assertRaises(MissingCredentials):
-            isign.resign_with_creds_dir(self.TEST_IPA, credentials_dir, output_path=output_path)
+            isign.resign_with_creds_dir(self.TEST_IPA_XCODE7, credentials_dir, output_path=output_path)
         self.unlink(output_path)

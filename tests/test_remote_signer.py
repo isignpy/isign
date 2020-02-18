@@ -36,7 +36,7 @@ class TestRemoteSigner(IsignBaseTest):
             httpd_process = self.start_httpd()
 
             isign.resign(
-                IsignBaseTest.TEST_IPA,
+                IsignBaseTest.TEST_IPA_XCODE7,
                 certificate=IsignBaseTest.CERTIFICATE,
                 provisioning_profiles=[IsignBaseTest.PROVISIONING_PROFILE],
                 output_path=output_path,

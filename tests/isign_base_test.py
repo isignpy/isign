@@ -15,25 +15,35 @@ class IsignBaseTest(unittest.TestCase):
     TEST_APPS_MISC_DIR = join(TEST_DIR, 'apps', 'misc')
     TEST_XCODE7_DIR = join(TEST_DIR, 'apps', 'xcode7')
     TEST_XCODE11_DIR = join(TEST_DIR, 'apps', 'xcode11')
-    TEST_APP = join(TEST_XCODE7_DIR, 'Test.app')  # FIXME, ios11+ or maybe don't even bother any more
-    TEST_APP_CODESIG_STR = join(TEST_XCODE7_DIR,
-                                'Test.app.codesig.construct.txt')  # FIXME, ios11+
-    TEST_APPZIP = TEST_APP + '.zip'  # FIXME, ios11+ or maybe don't even bother any more
-    TEST_IPA = join(TEST_XCODE7_DIR, 'Test.ipa')
-    TEST_WITH_FRAMEWORKS_IPA = join(TEST_XCODE7_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
+
+    # Things that aren't apps; these should raise exceptions
     TEST_NONAPP_DIR = join(TEST_APPS_MISC_DIR, 'NotAnAppDir')
     TEST_NONAPP_TXT = join(TEST_APPS_MISC_DIR, 'NotAnApp.txt')
     TEST_NONAPP_IPA = join(TEST_APPS_MISC_DIR, 'NotAnApp.ipa')
-    TEST_SIMULATOR_APP = join(TEST_XCODE7_DIR, 'TestSimulator.app.zip')  # FIXME, ios11+
+
+    # XCode7 ipas, and apps in other formats:
+    TEST_APP_XCODE7 = join(TEST_XCODE7_DIR, 'Test.app')  # FIXME, ios11+ or maybe don't even bother any more
+    TEST_APP_CODESIG_STR_XCODE7 = join(
+        TEST_XCODE7_DIR,
+        'Test.app.codesig.construct.txt'
+    )  # FIXME, ios11+
+    TEST_APPZIP_XCODE7 = TEST_APP_XCODE7 + '.zip'  # FIXME, ios11+ or maybe don't even bother any more
+    TEST_IPA_XCODE7 = join(TEST_XCODE7_DIR, 'Test.ipa')
+    TEST_WITH_FRAMEWORKS_IPA_XCODE7 = join(TEST_XCODE7_DIR, 'TestWithFrameworks.ipa')  # FIXME, ios11+
+    TEST_SIMULATOR_APP_XCODE7 = join(TEST_XCODE7_DIR, 'TestSimulator.app.zip')  # FIXME, ios11+
+
+    # These were added in a PR; variants of Test.app
+    TEST_UNSIGNED_THIN_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_thin.app')
+    TEST_UNSIGNED_FAT_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_fat.app')
+
+    # Credentials
     KEY = join(TEST_DIR, 'credentials', 'test.key.pem')
     CERTIFICATE = join(TEST_DIR, 'credentials', 'test.cert.pem')
     PROVISIONING_PROFILE = join(TEST_DIR, 'credentials', 'test.mobileprovision')
-    ERROR_KEY = '_errors'
     CREDENTIALS_DIR = join(TEST_DIR, 'credentials_std_names')
     CREDENTIALS_DIR_2 = join(TEST_DIR, 'credentials_std_names_2')
 
-    TEST_UNSIGNED_THIN_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_thin.app')
-    TEST_UNSIGNED_FAT_APP = join(TEST_XCODE7_DIR, 'Test_unsigned_fat.app')
+    ERROR_KEY = '_errors'
 
     # Fake Apple organizational unit
     OU = 'ISIGNTESTS'

@@ -14,9 +14,9 @@ class TestParsing(IsignBaseTest):
     # Also see generate_codesig_construct_txt.py, to generate
     # the string this tests for
     def test_app(self):
-        with open(self.TEST_APP_CODESIG_STR, 'r') as f:
+        with open(self.TEST_APP_CODESIG_STR_XCODE7, 'r') as f:
             expected_codesig_str = f.read().strip()
-        bundle = isign.bundle.IosApp(self.TEST_APP)
+        bundle = isign.bundle.IosApp(self.TEST_APP_XCODE7)
         executable = Executable(bundle, bundle.get_executable_path(), None)
         arch = executable.arches[0]
         codesig_str = str(arch['cmds']['LC_CODE_SIGNATURE'])
