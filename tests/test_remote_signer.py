@@ -17,10 +17,10 @@ class TestRemoteSigner(IsignBaseTest):
     def start_httpd():
         signing_service = SigningService()
 
-        def start():
-            signing_service.start()
+        def start_signing_service():
+            signing_service.start(quiet=True)
 
-        httpd_process = Process(name='signing_service', target=start)
+        httpd_process = Process(name='signing_service', target=start_signing_service)
         httpd_process.daemon = True
         httpd_process.start()
         time.sleep(1)

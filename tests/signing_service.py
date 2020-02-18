@@ -6,6 +6,7 @@ import json
 import os
 import pprint
 from signing_service_config import SigningServiceConfig
+import sys
 
 pp = pprint.PrettyPrinter(indent=4)
 CONFIG = SigningServiceConfig()
@@ -82,7 +83,11 @@ class SigningService(object):
     """ Server-side signer """
 
     @staticmethod
-    def start():
+    def start(quiet=False):
+        if quiet is True:
+            dev_null = open(os.devnull, 'w')
+            sys.stdout = dev_null
+            sys.stderr = dev_null
         print('Starting httpd at {}:{}...'.format(CONFIG.host, CONFIG.port))
         httpd = HTTPServer((CONFIG.host, CONFIG.port), SigningServiceHandler)
         httpd.serve_forever()
