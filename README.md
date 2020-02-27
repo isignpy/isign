@@ -6,11 +6,13 @@ isign
 
 A tool and library to re-sign iOS applications, without proprietary Apple software.
 
-For example, an iOS app in development would probably only run on the developer's iPhone.
-`isign` can alter the app so that it can run on another developer's iPhone.
+For example, an iOS app in development would probably only run on the developer's iPhone. `isign` can alter the app so that it can run on another developer's iPhone.
 
-Apple tools already exist to do this. But with `isign`, now you can do this on operating
-systems like Linux.
+Apple tools already exist to do this. But with `isign`, now you have many more options:
+ 
+ * Sign your app on an operating systems like Linux. This can be far more convenient for continuous integration (CI).
+ * Run a test lab where you accept compiled apps from other organizations, and resign them for use on a fleet of real devices. 
+ * Do things that are impossible with the Apple tools, such as storing your secrets in something that isn't the Keychain, or using a hardware security module that signs objects without you ever knowing the key.
 
 
 Table of contents
@@ -27,23 +29,13 @@ Table of contents
 Installing
 ----------
 
-### Linux
-
-The latest version of `isign` can be installed via [PyPi](https://pypi.python.org/pypi/isign/):
-
-``` {.sourceCode .}
-$ pip install isign
-```
-
-### Mac OS X
-
 The easiest method is to use `git` to clone the [source code repository](https://github.com/isignpy/isign) and
-run the install script, then install dependencies with `pipenv`.
+run the install script, then install dependencies with `pipenv`. 
 
-``` {.sourceCode .}
+```shell script
 $ git clone https://github.com/isignpy/isign.git
 $ cd isign
-$ ./INSTALL.sh
+$ ./INSTALL.sh    # very important if you are on MacOS
 $ pipenv --two install
 ```
 
@@ -55,7 +47,7 @@ and Mac OS X. However, you will need a Mac to export your Apple developer
 credentials.
 
 If you're like most iOS developers, credentials are confusing -- if so check out
-the [documentation on credentials](https://github.com/isignpy/isign/blob/master/docs/credentials.rst) on Github.
+the [documentation on credentials](docs/credentials.md) on Github.
 
 You should have a key and certificate in
 [Keychain Access](https://en.wikipedia.org/wiki/Keychain_(software)),
@@ -68,7 +60,7 @@ asks you for a password to protect this file, just leave it blank.
 
 Next, let's extract the key and certificate you need, into a standard PEM format.
 
-``` {.sourceCode .}
+``` bash
 $ isign_export_creds.sh ~/Certificates.p12
 ```
 
@@ -85,11 +77,12 @@ If you develop with XCode, you might have a provisioning profile already.
 On the Mac where you develop with XCode, try running the `isign_guess_mobileprovision.sh` script.
 If you typically have only a few provisioning profiles and install on one phone, it might find it.
 
-Anyway, once you have a `.mobileprovision` file, move it to `~/.isign/isign.mobileprovision`.
+Anyway, once you have a `.mobileprovision` file, move it to `~/.isign/isign.mobileprovision`. (It doesn't actually matter what the 
+name of this file is).
 
 The end result should look like this:
 
-``` {.sourceCode .}
+```shell script
 $ ls -l ~/.isign
 -r--r--r--    1 alice  staff  2377 Sep  4 14:17 certificate.pem
 -r--r--r--    1 alice  staff  9770 Nov 23 13:30 isign.mobileprovision
@@ -104,14 +97,14 @@ How to use isign
 If you've installed all the files in the proper locations above, then `isign` can be now invoked
 on any iOS `.app` directory, or `.ipa` archive, or `.app.zip` zipped directory. For example:
 
-``` {.sourceCode .}
+```shell script
 $ isign -o resigned.ipa my.ipa
 archived Ipa to /home/alice/resigned.ipa
 ```
 
 You can also call it from Python:
 
-``` {.sourceCode .python}
+```python
 from isign import isign
 
 isign.resign("my.ipa", output_path="resigned.ipa")
@@ -120,7 +113,7 @@ isign.resign("my.ipa", output_path="resigned.ipa")
 isign command line arguments
 ----------------------------
 
-``` {.sourceCode .}
+```shell script
 # Resigning by specifying all credentials, input file, and output file
 $ isign -c /path/to/mycert.pem -k ~/mykey.pem -p path/to/my.mobileprovision \
         -o resigned.ipa original.ipa
@@ -143,6 +136,10 @@ $ isign -h
 Path to Apple certificate in PEM format. This is already included in the library, so you will likely
 never need it. In the event that the certificates need to be changed, See the [Apple Certificate documentation](docs/applecerts.md).
 
+**--adhoc**
+
+Resign the app "ad hoc". This is a full signature, but with empty data. Simulator apps need to be signed this way.
+
 **-c &lt;path&gt;, --certificate &lt;path&gt;**
 
 Path to your certificate in PEM format. Defaults to `$HOME/.isign/certificate.pem`.
@@ -153,9 +150,7 @@ For the application path, display the information property list (Info.plist) as 
         
 **-e, --entitlements**
 
-Use alternate entitlements,         '-e', '--entitlements',
-
-
+Use alternate entitlements. Normally, `isign` will discover entitlements from the provisioning profile. If you want to override the entitlements for a bundle, you can simply add an entitlements file formatted as a plist here on the command line. Entitlements files already specify which bundle they apply to, so you can add as many entitlements files as you wish.
 
 **-h, --help**
 
@@ -168,18 +163,40 @@ Takes a comma-separated list of key=value pairs, such as
 `CFBundleIdentifier=com.example.app,CFBundleName=ExampleApp`. Use with caution!
 See Apple documentation for [valid Info.plist keys](https://developer.apple.com/library/ios/documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html).
 
+Caveat: at present, this only works with the main executable.
+
+**--inplace**
+
+Resigns the application in place.
+
 **-k &lt;path&gt;, --key &lt;path&gt;**
 
 Path to your private key in PEM format. Defaults to `$HOME/.isign/key.pem`.
 
 **-n &lt;directory&gt;, --credentials &lt;directory&gt;**
 
-Equivalent to:
+Pull all credentials, provisioning profiles, and entitlements from a directory. 
 
-``` {.sourceCode .}
--k <directory>/key.pem 
--c <directory>/certificate.pem 
--p <directory>/isign.mobileprovision
+For example, if a that directory contained:
+
+```shell script
+certificate.pem
+key.pem
+myApp.mobileprovision
+myApp.WatchKitApp.mobileprovision
+myApp.WatchKitApp.entitlements
+myApp.appex.entitlements
+```
+
+That would be equivalent to:
+
+```shell script
+-k key.pem 
+-c certificate.pem 
+-p myApp.mobileprovision
+-p MyApp.WatchKitApp.mobileprovision
+-e myApp.appex.entitlements
+-e myApp.WatchKitApp.entitlements
 ```
 
 **-o &lt;path&gt;, --output &lt;path&gt;**
@@ -188,8 +205,24 @@ Path to write the re-signed application. Defaults to `out` in your current worki
 
 **-p &lt;path&gt;, --provisioning-profile &lt;path&gt;**
 
-Path to your provisioning profile. This should be associated with your certificate. Defaults to
+Path to your provisioning profile. This should be associated with your certificate. If not included, it will default to
 `$HOME/.isign/isign.mobileprovision`.
+
+You can include multiple provisioning profiles with repeated use of this option.
+
+**--signer &lt;SignerModuleName.SignerClassName&gt;**
+
+Name of alternate signer module. Must be discoverable via PYTHONPATH. See
+[Signer Modules](docs/signer_modules.md) for more information.
+  
+**--signerArg &lt;foo=bar&gt;**
+
+Keyword=value arguments for signer module. Can be repeated multiple 
+times.
+
+**--shallow**
+
+Only resign the main executable.
 
 **-v, --verbose**
 
@@ -242,8 +275,6 @@ See the [docs](docs) directory of this repository for random stuff that didn't f
 Authors
 -------
 
-[Neil Kandalgaonkar](https://github.com/neilk) is the main developer and maintainer.
-
-Proof of concept by [Steven Hazel](https://github.com/sah) and Neil Kandalgaonkar.
+[Neil Kandalgaonkar](https://neilk.net/) and [Steven Hazel](https://stevenhazel.org) are the primary authors and maintainers.
 
 Reference scripts using Apple tools by [Michael Han](https://github.com/mhan).

@@ -36,7 +36,7 @@ def parse_args():
         metavar='<your.mobileprovision path>',
         action='append',
         type=absolute_path_argument,
-        help='Path to provisioning profile. Repeat for multiple'
+        help='Path to provisioning profile. Repeat for multiple provisioning profiles.'
     )
     parser.add_argument(
         '-a', '--apple-cert',
@@ -124,13 +124,6 @@ def parse_args():
         help='Add an entitlements plist. It will be used for bundles that match the application identifier.'
     )
     parser.add_argument(
-        '--sign',
-        required=False,
-        dest='fingerprint',
-        action='store',
-        help='Sign with the identity with this fingerprint, overriding any key, certificate or credential args.  Currently only supports the special \'-\' identity for ad-hoc signing.',
-    )
-    parser.add_argument(
         '--shallow',
         required=False,
         dest='deep',
@@ -158,7 +151,7 @@ def parse_args():
         dest='signer_argument_pairs',
         action='append',
         metavar='<foo=bar>',
-        help='Keyword=value arguments for signer module (can be used multiple times)',
+        help='Keyword=value arguments for signer module. Repeat for multiple.',
     )
     parser.add_argument(
         '--adhoc',
