@@ -32,11 +32,14 @@ Installing
 The easiest method is to use `git` to clone the [source code repository](https://github.com/isignpy/isign) and
 run the install script, then install dependencies with `pipenv`. 
 
+If you want to run the tests or develop with isign, skip ahead to [Contributing][#contributing]
+
 ```shell script
 $ git clone https://github.com/isignpy/isign.git
 $ cd isign
 $ ./INSTALL.sh    # very important if you are on MacOS
 $ pipenv --two install
+$ pipenv shell
 ```
 
 How to get started
@@ -242,7 +245,7 @@ listen, and be helpful.
 
 Development happens on [our Github repository](https://github.com/isignpy/isign). File an issue, or fork the code!
 
-You'll need `[pipenv](https://docs.pipenv.org/en/latest/)`.
+You'll need [pipenv](https://docs.pipenv.org/en/latest/).
 
 Then, just do the following:
 
@@ -251,6 +254,7 @@ $ git clone https://github.com/isignpy/isign.git
 $ cd isign
 $ ./INSTALL.sh 
 $ pipenv --two install --dev
+$ pipenv shell
 ```
 
 If the tests don't pass please [file an issue](https://github.com/isignpy/isign/issues). Please keep the tests up to date as you develop.
