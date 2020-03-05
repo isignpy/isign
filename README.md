@@ -32,7 +32,7 @@ Installing
 The easiest method is to use `git` to clone the [source code repository](https://github.com/isignpy/isign) and
 run the install script, then install dependencies with `pipenv`. 
 
-If you want to run the tests or develop with isign, skip ahead to [Contributing][#contributing]
+If you want to run the tests or develop with isign, skip ahead to [Contributing](#contributing).
 
 ```shell script
 $ git clone https://github.com/isignpy/isign.git
