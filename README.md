@@ -255,6 +255,10 @@ $ cd isign
 $ ./INSTALL.sh 
 $ pipenv --two install --dev
 $ pipenv shell
+
+... do your development ...
+
+$ ./run_tests.sh
 ```
 
 If the tests don't pass please [file an issue](https://github.com/isignpy/isign/issues). Please keep the tests up to date as you develop.
