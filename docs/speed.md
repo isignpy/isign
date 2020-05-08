@@ -14,7 +14,7 @@ If neither of those approaches is acceptable to you, you can stop reading here. 
 
 Okay, so what *else* is taking time?
 
-1)  Copying the files. Maybe with some exotic copy-on-write filesystem we could avoid that?
+1)  Avoid copying the files. Currently it acts as if you're signing an `.app` directory that you want to keep around, and thus always copies it. We could default to destructively modifying the app directory. Copying the files is especially unnecessary if we just obtained the files from a zip.
 2)  Hashing the entire contents of the application. For data that we've never seen before, we can't do better than O(n). So we lose *again*.
 
 But we could still do better in the general case:
