@@ -6,12 +6,11 @@ isign
 
 A tool and library to re-sign iOS applications, without proprietary Apple software.
 
-For example, an iOS app in development would probably only run on the developer's iPhone. `isign` can alter the app so that it can run on another developer's iPhone.
-
-Apple tools already exist to do this. But with `isign`, now you have many more options:
+Apple's tools for doing this - `XCode` and `codesign` - are very friendly but don't give you everything you might want. With `isign`, now you have many more options:
  
  * Sign your app on an operating systems like Linux. This can be far more convenient for continuous integration (CI).
- * Run a test lab where you accept compiled apps from other organizations, and resign them for use on a fleet of real devices. 
+ * Run a test lab where you accept compiled apps from other organizations, and resign them for use on a fleet of real devices.
+ * Alter an app's entitlements, provisioning profiles, and metadata without having the source code.
  * Do things that are impossible with the Apple tools, such as storing your secrets in something that isn't the Keychain, or using a hardware security module that signs objects without you ever knowing the key.
 
 
@@ -283,6 +282,6 @@ See the [docs](docs) directory of this repository for random stuff that didn't f
 Authors
 -------
 
-[Neil Kandalgaonkar](https://neilk.net/) and [Steven Hazel](https://stevenhazel.org) are the primary authors and maintainers.
+[Neil Kandalgaonkar](https://neilk.net/) and [Steven Hazel](https://stevenhazel.org/) are the primary authors and maintainers.
 
 Reference scripts using Apple tools by [Michael Han](https://github.com/mhan).
